@@ -2,7 +2,7 @@
 !    all length and times are measured in meters where  1 ns=0.3 meter=1GHz^{-1}
     use constants, only : pi,dp,c_l
     use RFootPars, only : release
-    use RFootPars, only : R_0,L_0, RL_param, AParMnmBas
+    use RFootPars, only : R_0,L_0, R_02,L_02, RL_param, AParMnmBas
     use RFootPars, only : step,N_frc,h_frc,Force,alpha_frc,N_step_max, N_FitPar_bas
     use RFootPars, only : line,  h_frcL,ForceL,alpha_frcL,D_ESmooth,N_line_max,AParMnm, AlternativeSmooth
     use RFootPars, only : stpv !,  h_frc_tr,Frc_tr,alpha_frc_tr
@@ -34,7 +34,7 @@
         ObsDist_dim, ObsDist_Step,  tTrace_step, lamx, u0, a_ChX, J0Q, padding, D_ESmooth, AlternativeSmooth, u0, &
         F_lim, nu_min,nu_max, SamplingTime, StParRange, Voltages, rh0,MoliereRadius, J0t, GroundLevel, X_0, X_max, &
         RnrmA, RnrmB, Zen_sh, Azi_sh, Zen_B, Azi_B, Intensity_Weight, NoisePower, Energy_sh, RL_param, R_0,L_0, Fit_StI, &
-        X_02, lamx2, X_max2, Energy_sh2
+        X_02, lamx2, X_max2, R_02,L_02, Energy_sh2
     !
     Test=.false.
     AtmHei_dim=2000d0 ; AtmHei_step=10.d0 ! [m]

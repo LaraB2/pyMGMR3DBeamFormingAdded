@@ -5,7 +5,7 @@
     use RFootPars, only : rh0,X_0,lamx,X_max,lam_tc,lam_100,XDepAlpha,J0t,J0Q, IntegrateCurrent
     use RFootPars, only : X_02, lamx2, X_max2, Energy_sh2
 !            NPart=NPart+Energy_sh2*( (X_rh-X_02)/(X_max2-X_02))**((X_max2-X_02)/lamx2) * exp((X_max2-X_rh)/lamx2) !&
-    use RFootPars, only : R_0,L_0, RL_param, MoliereRadius
+    use RFootPars, only : R_0,L_0, R_02,L_02, RL_param, MoliereRadius
     use RFootPars, only : alpha_frc0, alpha_vB, u0, F_over_beta, a_ChX, D_ESmooth, AlternativeSmooth
     use RFootPars, only : step,stpv, N_frc,h_frc,Force,alpha_frc,N_step_max, PenFacHeight
     use RFootPars, only : line,  h_frcL,ForceL,alpha_frcL, test
@@ -165,11 +165,16 @@
     enddo
    X_start=X_0 ! The X value where the shower has non-zero particle number
    If(RL_param) then
-      L_0=X_0
+      L_0=X_0     !needed when fitting
       R_0=lamx
       X_start=X_max-L_0/R_0
 !      L_0=R_0*(X_max+X_0)  !v3c:   X_0 is negative here!
-      write(2,*) 'L_0, R_0, X_0', L_0, R_0, X_start
+      If(Energy_sh2.le.0.) Then
+         write(2,*) 'Single bump LDF; Energy_sh, L_0, R_0, X_0=',Energy_sh, L_0, R_0, X_start
+      Else
+         write(2,*) 'Double bump LDF; Energy_sh, L_0, R_0, X_0=', Energy_sh, L_0, R_0, X_start, &
+                ', second bump:', Energy_sh2, R_02,L_02, X_max2
+      EndIf
    EndIf
     If(HoriShwr) then
         If(FiPa) write(2,*) 'AirDensity=',AirDensity(1),' , Estimated penetration depth offset at topheight=',X_rh,' is set to zero'
@@ -370,7 +375,13 @@
          If(( 1 - R_0*(X_max-X_rh)/L_0).lt.0) then
             NPart=0
          else
-           NPart=Energy_sh*( 1 - R_0*(X_max-X_rh)/L_0)**(1/(R_0*R_0)) * exp((X_max-X_rh)/(L_0*R_0)) !v3b and earlier
+            NPart=Energy_sh*( 1 - R_0*(X_max-X_rh)/L_0)**(1/(R_0*R_0)) * exp((X_max-X_rh)/(L_0*R_0)) !v3b and earlier
+         endif
+         If(( 1 - R_02*(X_max2-X_rh)/L_02).lt.0 .or. (Energy_sh2.le.0.)) then
+            NPart2=0
+         else
+            NPart2=Energy_sh2*( 1 - R_02*(X_max2-X_rh)/L_02)**(1/(R_02*R_02)) * exp((X_max2-X_rh)/(L_02*R_02)) !v3b and earlier
+            Npart=Npart+Npart2
          endif
         Else
          NPart=Energy_sh*( (X_rh-X_0)/(X_max-X_0))**((X_max-X_0)/lamx) * exp((X_max-X_rh)/lamx) !&

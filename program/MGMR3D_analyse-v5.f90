@@ -161,6 +161,7 @@ contains
    enddo
    close(unit=4)
    OPEN(UNIT=4,STATUS='unknown',FILE=trim(OFile)//'nu-'//trim(line)//'.csv')
+   write(2,*) 'file written: "', trim(OFile)//'nu-'//trim(line)//'.csv', '"'
    !idi=IDINT(Antd/ObsDist_Step)
    !if(idi.lt.1) idi=1
    !ddd=Antd/ObsDist_Step-idi
@@ -230,6 +231,7 @@ contains
       write(2,*) 'Calculate observables at theta=',thetaD,'degree'
       write(line,'(I3.3)') idint(thetaD)
       OPEN(UNIT=4,STATUS='unknown',FILE=trim(OFile)//trim(line)//'.csv')
+      write(2,*) 'file written: "',trim(OFile)//trim(line)//'.csv','"'
       write(4,"('!  d[m]',9x,'theta',10x,'I',13x,'Q/I',13x,'U/I',13x,'V/I' )")
       theta=thetaD*pi/180.
       Do idi =1,ObsDist_dim

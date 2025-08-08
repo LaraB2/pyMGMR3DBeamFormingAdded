@@ -27,9 +27,10 @@
       real(dp), save :: GroundLevel=0.  ! [m]
       Logical, save :: RL_param=.false.
       logical, save :: AlternativeSmooth=.false.
-      Real(dp), save :: R_0=0., L_0=0.  ! Parametrization long. profile
+      Real(dp), save :: R_0=0.28, L_0=215  ! Parametrization long. profile
+      Real(dp), save :: R_02=0.28, L_02=215.  ! Parametrization long. profile for second bump
       real(dp)  :: X_0, X_max  ! Possible to fit
-      real(dp)  :: X_02=100d0, lamx2=100d0, X_max2=600d0, Energy_sh2
+      real(dp)  :: X_02=100d0, lamx2=100d0, X_max2=600d0, Energy_sh2 ! second bump LDF
       real(dp), save :: D_IMax
       real(dp), save :: Zen_sh, Azi_sh  ! [deg], [North:Azi=90, East:Azi=0]
       real(dp), save :: alpha_vB=90., J0t, Zen_B, Azi_B  ! [deg], [North:Azi=90, East:Azi=0]
