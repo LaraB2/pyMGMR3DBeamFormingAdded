@@ -183,31 +183,23 @@ def add_atmosphere_to_hdf5(hdf5_path, sh_current_path):
     df = pd.read_csv(sh_current_path, sep=r'\s+', comment='!', names=columns, engine='python')
 
     with h5py.File(hdf5_path, "a") as f:
-        #if "atmosphere" in f:
-        #    del f["atmosphere"]
         atmosphere_group = f.require_group("atmosphere")
 
         # ---- Geometry group ----
         geometry_cols = ["z_km", "X_gcm2", "refractivity", "alpha_tr"]
         geom_data = df[geometry_cols].to_numpy(dtype='f8')
-        #geom_grp = atmosphere_group.create_group("Geometry")
-        #dset_geom = geom_grp.create_dataset("data", data=geom_data)
         dset_geom = atmosphere_group.create_dataset("Geometry", data=geom_data)
         dset_geom.attrs["columns"] = np.array(geometry_cols, dtype='S')
 
         # ---- Currents group ----
         current_cols = ["Ix", "Iy", "charge_excess", "dxi"]
         current_data = df[current_cols].to_numpy(dtype='f8')
-        #curr_grp = atmosphere_group.create_group("Currents")
-        #dset_curr = curr_grp.create_dataset("data", data=current_data)
         dset_curr = atmosphere_group.create_dataset("Currents", data=current_data)
         dset_curr.attrs["columns"] = np.array(current_cols, dtype='S')
 
         # ---- Force group ----
         force_cols = ["Fx", "Fy", "F_mag_keVpm", "phi"]
         force_data = df[force_cols].to_numpy(dtype='f8')
-        #force_grp = atmosphere_group.create_group("Force")
-        #dset_force = force_grp.create_dataset("data", data=force_data)
         dset_force = atmosphere_group.create_dataset("Force", data=force_data)
         dset_force.attrs["columns"] = np.array(force_cols, dtype='S')
 
@@ -231,14 +223,11 @@ def add_timetraces_to_observers(hdf5_path, trace_dir):
             antenna_name = f"pos_{d}_{theta}"
 
             df = pd.read_csv(trace_file, sep=r'\s*,\s*', engine='python', comment='!', header=None)
-            df.columns = ["t_us", "Re_Ex", "Im_Ex", "Re_Ey", "Im_Ey"] #, "Ex", "Ey", "Ez"
+            df.columns = ["t_us", "Re_Ex", "Im_Ex", "Re_Ey", "Im_Ey"]
             df["Ex"] = np.sqrt(df["Re_Ex"]**2+df["Im_Ex"]**2)
             df["Ey"] = np.sqrt(df["Re_Ey"]**2+df["Im_Ey"]**2)
             df["Ez"] = np.zeros_like(df["t_us"])
             data = df.to_numpy(dtype='f8')
-            #data["Ex"] = np.sqrt(data[:,1]**2+data[:,2]**2)
-            #data["Ey"] = np.sqrt(data[:,3]**2+data[:,4]**2)
-            #data["Ez"] = np.zeros_like(data["t_us"])
             dset = observer_grp.create_dataset(f"{antenna_name}", data=data)
             x, y = np.cos(np.deg2rad(float(theta))) * int(d), np.sin(np.deg2rad(float(theta))) * int(d)
             dset.attrs['position'] = np.array([x, y], dtype=float)
