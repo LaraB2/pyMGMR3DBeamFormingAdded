@@ -224,19 +224,16 @@ def add_timetraces_to_observers(hdf5_path, trace_dir):
 
             df = pd.read_csv(trace_file, sep=r'\s*,\s*', engine='python', comment='!', header=None)
             df.columns = ["t_us", "Re_Ex", "Im_Ex", "Re_Ey", "Im_Ey"]
-            df["Ex"] = np.sqrt(df["Re_Ex"]**2+df["Im_Ex"]**2)
-            df["Ey"] = np.sqrt(df["Re_Ey"]**2+df["Im_Ey"]**2)
-            df["Ez"] = np.zeros_like(df["t_us"])
+            df[["Re_Ex", "Im_Ex", "Re_Ey", "Im_Ey"]] *= 1e-11 #convert 100k/V to µV/m 
             data = df.to_numpy(dtype='f8')
             dset = observer_grp.create_dataset(f"{antenna_name}", data=data)
             x, y = np.cos(np.deg2rad(float(theta))) * int(d), np.sin(np.deg2rad(float(theta))) * int(d)
             dset.attrs['position'] = np.array([x, y], dtype=float)
             dset.attrs["columns"] = np.array(df.columns, dtype='S')
-            dset.attrs["units"] = np.array(["us", "V/m", "V/m", "V/m", "V/m", "V/m", "V/m", "V/m"], dtype='S')
+            dset.attrs["units"] = np.array(["nano s", "microV/m", "microV/m", "microV/m", "microV/m"], dtype='S')
 
     print(f"Stored time traces for all antennas in: '{hdf5_path}'")
 
-    
 if __name__ == "__main__":
     
     hdf5_path = Path(sys.argv[1])

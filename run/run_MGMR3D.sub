@@ -1,0 +1,14 @@
+executable              = run_MGMR3D.sh
+
+log                     = run_MGMR3D.log
+output                  = run_MGMR3D.out
+error                   = run_MGMR3D.err
+
+should_transfer_files   = No
+max_idle = 200
+
+JobBatchName            = run_MGMR3D
+
+queue arguments from (
+    3 10 //user/vitaldehenau/Github/pyMGMR3D/run/outputs/
+)
