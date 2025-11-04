@@ -1,0 +1,250 @@
+size   29 19
+! begin rotate -90
+set font pstr
+!translate -28 0
+set hei .6
+H=7
+B=7
+bsh=1.5
+dB=bsh+B
+set lwidth 0.02
+set hei .7
+
+dir$='../runs/plot/'
+if(nargs() > 0 ) then 
+    dir$=arg$(1)
+end if
+dat_nu$=dir$+"dist_nu-"
+dat_tt$=dir$+"dist_tt-"
+
+d1$="010"
+d2$="065"
+d3$="105"
+d4$="185"
+
+!d1$="020"
+!d2$="060"
+!d3$="100"
+!d4$="150"
+Ndist = 4
+fopen dat_nu$+d1$+'.csv' inchan read
+freadln inchan X_max  Zen_sh
+amove 2 3+2*h+1.2
+write 'X_{max}=' X_max '[g/cm^2],  \theta_{sh}=' Zen_sh '^o'
+
+Sub SelectDatatSetName i 
+   If i = 1 then
+      namei$ = d1$
+      !colori$ = 'blue'
+      colori$ = 'orange'
+      lstyi = 0
+   Else if i = 2 then
+      namei$ = d2$
+      !colori$ = 'green'
+      colori$ = 'magenta'
+      lstyi = 0
+   Else if i = 3 then
+      namei$ = d3$
+      !colori$ = 'orange'
+      colori$ = 'green'
+      lstyi = 0
+   Else if i = 4 then
+      namei$ = d4$
+      !colori$ = 'red'
+      colori$ = 'blue'
+      lstyi = 3
+   End if
+   return namei$
+   return colori$
+   return lstyi
+End Sub
+
+sub NuGraph Id$ Label$
+set hei .7
+begin graph
+  size B H
+  vscale 1
+  hscale 1
+  xaxis log  min 0.05 ! max 0.2 dticks  0.5 dsubticks 0.1 !nolast
+  yaxis log   ! min 0.002 max 10 
+  xticks length .3
+  yticks length .3
+  xsubticks length .1
+  ysubticks length .1
+!  ylabels off
+    if Id$ = "x" then
+      for i = 1 to Ndist
+         SelectDatatSetName i 
+         data dat_nu$+namei$+'.csv' d[i]=c1,c2   ignore 1
+         d[i] lstyle lstyi  lwidth 0.05  color colori$
+      next i
+        xlabels off
+        x2labels on
+    else if Id$ = "y" then
+      for i = 1 to Ndist
+         SelectDatatSetName i 
+         data dat_nu$+namei$+'.csv' d[i]=c1,c3   ignore 1
+         d[i] lstyle lstyi  lwidth 0.05  color colori$
+      next i
+        xlabels off
+    else if Id$ = "r" then
+      for i = 1 to Ndist
+         SelectDatatSetName i 
+         data dat_nu$+namei$+'.csv' d[i]=c1,c4   ignore 1
+         d[i] lstyle lstyi  lwidth 0.05  color colori$
+      next i
+        !xlabels on
+        xtitle "\nu [GHz]"
+    end if
+  end graph
+begin key
+    nobox
+    position tr
+    set hei .5
+    text Label$
+end key
+end sub
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
+
+sub PhGraph Id$ Label$
+set hei .7
+begin graph
+  size B H
+  vscale 1
+  hscale 1
+  xaxis log  min 0.05 ! max 0.2 dticks  0.5 dsubticks 0.1 !nolast
+  yaxis  nolast ! min 0.002 max 10 
+  xticks length .3
+  yticks length .3
+  xsubticks length .1
+  ysubticks length .1
+!  ylabels off
+    if Id$ = "x" then
+      for i = 1 to Ndist
+         SelectDatatSetName i 
+         data dat_nu$+namei$+'.csv' d[i]=c1,c5   ignore 1
+         d[i] lstyle lstyi  lwidth 0.05  color colori$
+      next i
+        xlabels off
+        x2labels on
+    else if Id$ = "y" then
+      for i = 1 to Ndist
+         SelectDatatSetName i 
+         data dat_nu$+namei$+'.csv' d[i]=c1,c6   ignore 1
+         d[i] lstyle lstyi  lwidth 0.05  color colori$
+      next i
+        xlabels off
+    else if Id$ = "r" then
+      for i = 1 to Ndist
+         SelectDatatSetName i 
+         data dat_nu$+namei$+'.csv' d[i]=c1,c7   ignore 1
+         d[i] lstyle lstyi  lwidth 0.05  color colori$
+      next i
+        !xlabels on
+        xtitle "\nu [GHz]"
+    end if
+  end graph
+begin key
+    nobox
+    position bl
+    set hei .5
+    text "phase["+Label$+"(\nu)]"
+    text "[\pi]"
+end key
+end sub
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
+sub TtGraph Id$ Label$
+set hei .7
+begin graph
+  size B H
+  vscale 1
+  hscale 1
+  xaxis  min -10 max +40 ! dticks  50 dsubticks 5 hei .9 !nolast
+  yaxis   nolast
+!  yaxis hei .9 ! min -29 max -3 dticks 5 dsubticks 1 
+        ylabels off
+        y2labels on
+  xticks length .3
+  yticks length .3
+  xsubticks length .1
+  ysubticks length .1
+    if Id$ = "x" then
+      for i = 1 to Ndist
+         SelectDatatSetName i 
+         data dat_tt$+namei$+'.csv' d[i]=c1,c2   ignore 1
+         d[i] lstyle lstyi  lwidth 0.05  color colori$
+      next i
+        xlabels off
+        x2labels on
+    else if Id$ = "y" then
+      for i = 1 to Ndist
+         SelectDatatSetName i 
+         data dat_tt$+namei$+'.csv' d[i]=c1,c3   ignore 1
+         d[i] lstyle lstyi  lwidth 0.05  color colori$
+      next i
+        xlabels off
+    else if Id$ = "r" then
+      for i = 1 to Ndist
+         SelectDatatSetName i 
+         data dat_tt$+namei$+'.csv' d[i]=c1,c4   ignore 1
+         d[i] lstyle lstyi  lwidth 0.05  color colori$
+      next i
+        !xlabels on
+        xtitle "t [ns]"
+    end if
+    let d99 = 0 from 0.0 to 10 step 1
+    d99 lstyle 0 lwidth 0.02 color black
+  end graph
+   begin key
+       nobox
+       set hei .5
+       position tr
+       text "real("+Label$+"(t)]"
+   end key
+if Id$ = "x" then
+    begin key
+        nobox
+        position tl
+        set hei .6
+      for i = 1 to Ndist
+         SelectDatatSetName i 
+         lstyle lstyi  lwidth 0.1 text namei$+" m" color colori$
+      next i
+        set color black
+    end key
+end if
+end sub
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+amove 2 3+1*h
+NuGraph "x" "E_x"
+amove 2 3+h
+!NuGraph "y" "E_y"
+amove 2 3
+NuGraph "r" "E_r"
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+amove 4+b 3+1*h
+PhGraph "x" "E_x"
+amove 4+b 3+h
+!PhGraph "y" "E_y"
+amove 4+b 3
+PhGraph "r" "E_r"
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+amove 5+2*b 3+1*h
+TtGraph "x" "E_x"
+amove 4+b 3+h
+!TtGraph "y" "E_y"
+amove 5+2*b 3
+TtGraph "r" "E_r"
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+translate -0.2 -0.2
+include note.gle
+@note "pulse-d"
+
