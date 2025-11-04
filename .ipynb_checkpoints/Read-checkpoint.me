@@ -1,0 +1,128 @@
+MGMR3D is a fortran program with which it is possible to calculate radio emission from cosmic-ray induced air-showers using a 
+coherent model.
+after specifying a charge current density, the complete radio footprint is calculated.
+The program contains a least-square fitting routine to be able to fit the charge-current density to give a best reproduction of a 
+specified foot-print.
+
+The purpose of the program was originally to obtain a better insights in the mechanisms for radio emission.
+In later years it has been used primarily to extract atmospheric electric fields from the cosmic-ray footprint as it passes through 
+thunder clouds.
+It offers also an efficient basis for extracting shower parameters under fair-weather conditions.
+
+DOI: 10.5281/zenodo.7698096
+@software{olaf_scholten_2023_7698097,
+  author = {Olaf Scholten},
+  title = {MGMR3D},
+  month = mar,
+  year = 2023,
+  publisher = {Zenodo},
+  version = {5.1},
+  doi = {10.5281/zenodo.7698097},
+  url = {https://doi.org/10.5281/zenodo.7698097}
+}
+Version 5 has contour maps for intensities and stokes parameters implemented.
+
+------------------------------------------- LINUX: -----------------
+
+Note that to run this the path to some included source files in the .f90 needs to be adjusted, these files are included in the main 
+.zip directory. These may be put anywhere in your own directory structure (for my own installation these are of dual use in another 
+applicatian, which is why they are special). Be sure to set the links in "MGMR3D_fit-makefile-v5.mak", the settings of the lines
+NLSOL = /home/olaf/LMA-fit/LMA2019/Program/
+AntFie = /home/olaf/LMA-fit/LMA2019/Program/
+to the correct folders on your system. Same holds for
+export ProgDir="${Home}MGMR3D/Program/"
+export AntennaFun="/home/olaf/LMA-fit/LMA2019/AntenFunct/"
+in the .sh file
+
+To install the necessary library please run   fftpack5.1d_MGMR.sh
+but first check that the aliasses ( definitions starting with 'export' ) that are set in this shell point to the right folders.
+
+To create the density maps the line
+grid -20.
+needs to follow the data statement.
+
+For plotting the command
+gle -d jpg -r 200 -o ../FitStokes-map.jpg ${ProgDir}FitStokes-map.GLE ${RunFolder}/plot/
+is used which assumes that all .gle scripts are installed in the program folder. This creates a .jpg file with a resolution of 200. 
+to obtain a .pdf (with full resolution) you chould change this command to
+gle -d pdf -o ../FitStokes-map.jpg ${ProgDir}FitStokes-map.GLE ${RunFolder}/plot/
+
+Note that when 'voltages' is set in the data input the contour map will give intensities only. When Stokes parameters are given in 
+the shower plane, the plots will be made in the shower plane (I hope).
+
+===================================== WINDOWS: ================================
+To run on a windows system the includes in MGMR3D_fit-v5.f90 that were commented out should be activated, i.e. lines
+    Include 'C:\Users\Olaf Scholten\Documents\AstroPhys\Lightning\Imaging\LMA\LMA2019\Program/AntFuncCnst.f90' !Take this out when 
+    using the LINUX makefile
+    Include 'C:\Users\Olaf Scholten\Documents\AstroPhys\Lightning\Imaging\LMA\LMA2019\Program/AntFunct.f90' !Take this out when using 
+    the LINUX makefile
+    Include 'C:\Users\Olaf Scholten\Documents\AstroPhys\Lightning\Imaging\LMA\LMA2019\Program/nl2sol.f90' !Take this out when using 
+    the LINUX makefile
+in the preamble and should be pointing to the correct directories.
+Likewise,
+   set "LIBRARY=-lm C:\OlafsUtil\NumLib\bin\libFFTPack-d.a"
+   set Base="C:\Users\Olaf Scholten\Documents\AstroPhys\Lightning\"
+   set "AntennaFun=%Base%Imaging\LMA\LMA2019\AntenFunct\"
+   set ProgDir=%Base%MGMR3D\Program\
+in the .bat file should be pointing to the correct directories.
+
+==========================================
+Contact information:
+Olaf Scholten, University of Groningen
+o.scholten@rug.nl
+scholten.olaf@gmail.com
+=====================================
+Some Publications using MGMR
+------------------------------
+A Macroscopic Description of Coherent Geo-Magnetic Radiation from Cosmic Ray Air Showers.
+O. Scholten, K. Werner, and F. Rusydi
+Astropart. Phys. 29, 94 (2008)
+http://dx.doi.org/10.1016/j.astropartphys.2007.11.012
+------------------------------------
+Macroscopic Treatment of Radio Emission from Cosmic Ray Air Showers based on Shower Simulations.
+Klaus Werner and Olaf Scholten
+Astropart. Phys. 29, 393-411 (2008); arXiv:0712.2517.
+http://dx.doi.org/10.1016/j.astropartphys.2008.04.004
+---------------
+Coherent Cherenkov Radiation from Cosmic-Ray-Induced Air Showers.
+K. D. de Vries, A. M. van den Berg, O. Scholten, and K. Werner
+Phys. Rev. Lett. 107, 061101 (2011)
+http://link.aps.org/doi/10.1103/PhysRevLett.107.061101
+----------------
+A Realistic Treatment of Geomagnetic Cherenkov Radiation from Cosmic Ray Air Showers.
+Klaus Werner, Krijn D. De Vries, Olaf Scholten
+Astropart. Phys. 37, 5-16 (2012); arXiv:1201.4471
+http://dx.doi.org/10.1016/j.astropartphys.2012.07.007
+------------------
+The convergence of EAS radio emission models and a detailed comparison of REAS3 and MGMR simulations.
+T. Huege, M. Ludwig, O. Scholten, K.D. de Vries
+Nucl. Instr. and Meth. A 662, S179 (2012)
+http://dx.doi.org/10.1016/j.nima.2010.11.041
+----------------
+The air shower maximum probed by Cherenkov effects from radio emission.
+Krijn D. de Vries, Olaf Scholten, Klaus Werner
+Astropart. Phys. 45, 23-27 (2013); arXiv:1304.1321
+http://dx.doi.org/10.1016/j.astropartphys.2013.02.003
+http://arxiv.org/abs/arXiv:1304.1321
+----------------
+Influence of Atmospheric Electric Fields on the Radio Emission from Extensive Air Showers
+T.N.G. Trinh. et al.[O. Scholten]
+Phys. Rev. D 93, 023003 (2016); arXiv:1511.03045
+http://link.aps.org/doi/10.1103/PhysRevD.93.023003
+http://arxiv.org/abs/arXiv:1511.03045
+-----------------
+Thunderstorm electric Fields probed by extensive air showers through their polarized radio emission
+T.N.G. Trinh et al.[O. Scholten]
+Phys. Rev. D 95, 083004 (2017)
+http://link.aps.org/doi/10.1103/PhysRevD.95.083004
+----------------------------------
+Determining electric Fields in thunderclouds with the radio telescope LOFAR
+TNG Trinh, Olaf Scholten, et al.
+J. Geoph. Res.: Atmosph. 125, e2019JD031433 (2020)
+------------------------
+Determining atmospheric electric Fields using MGMR3D
+TNG Trinh, O Scholten, S Buitink, KD De Vries, P Mitra, T Phong Nguyen, DT Si
+Phys. Rev. D 105, 063027 (2022)
+http://link.aps.org/doi/10.1103/PhysRevD.105.063027
+-------------------------------
+

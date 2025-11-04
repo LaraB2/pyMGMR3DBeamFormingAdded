@@ -28,7 +28,7 @@ PLOT_ENABLED=false
 HDF5_ENABLED=true
 PLOT_OUTPUT_DIR=""
 RESULT_DIR=""
-HDF5_FILENAME="${RUN_FOLDER}/${BASENAME}.hdf5"
+HDF5_FILENAME="$(dirname "$INPUT_FILE")/${BASENAME}.hdf5"
 
 # --- Parse flags ---
 # Loop through all provided command-line arguments to parse flags.
@@ -74,7 +74,9 @@ echo "Input file     = ${INPUT_FILE}"
 if $PLOT_ENABLED; then
     echo "Plot output to = ${PLOT_OUTPUT_DIR}"
 fi
-echo "HDF5 output to = ${HDF5_FILENAME}"
+if $HDF5_ENABLED; then
+    echo "HDF5 output to = ${HDF5_FILENAME}"
+fi
 if [ -n "$RESULT_DIR" ]; then
     echo "Temporary 'plot' folder will be moved to = ${RESULT_DIR}/${BASENAME}_results"
 fi
@@ -149,7 +151,7 @@ except ImportError as e:
     exit(1)
 EOF
         if [ $? -eq 0 ]; then
-            python3 "${RUN_FOLDER}/MGMR_HDF5.py" "${RUN_FOLDER}/${BASENAME}.hdf5" "${RUN_FOLDER}/${INPUT_FILE}" "${RUN_FOLDER}/plot/FitResult.dat" "${RUN_FOLDER}/plot/sh_Current.dat" "${RUN_FOLDER}/plot/"
+            python3 "${RUN_FOLDER}/MGMR_HDF5.py" "${HDF5_FILENAME}" "${INPUT_FILE}" "${RUN_FOLDER}/plot/FitResult.dat" "${RUN_FOLDER}/plot/sh_Current.dat" "${RUN_FOLDER}/plot/"
         else
             echo "Skipping HDF5 conversion due to missing libraries."
         fi

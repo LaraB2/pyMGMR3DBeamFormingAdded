@@ -13,20 +13,13 @@ if [ -z "$FIRST_RUN" ] || [ -z "$LAST_RUN" ]; then
     echo "Usage: $0 FIRST_RUN LAST_RUN"
     exit 1
 fi
-    
-if [ -f "$OUTPUT_FILE_PATH" ]; then
-    echo "output: $OUTPUT_FILE_PATH doesn't exist."
-    exit 1
-fi
 
 for ((RUN=$FIRST_RUN; RUN<=$LAST_RUN; RUN++)); do
-    FILENAME=$(printf "SIM%06d.in" $RUN)
-
+    FILENAME=$OUTPUT_FILE_PATH/$(printf "SIM%06d.in" $RUN)
     if [ -f "$FILENAME" ]; then
         echo "Running MGMR3D.sh for $FILENAME..."
-        ./MGMR3D.sh "$FILENAME"
+        ./pyMGMR3D.sh "$FILENAME"
         mv $(printf "*SIM%06d.*" $RUN) "$OUTPUT_FILE_PATH"
-        
     else
         echo "Warning: $FILENAME not found, skipping."
     fi

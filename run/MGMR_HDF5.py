@@ -223,14 +223,14 @@ def add_timetraces_to_observers(hdf5_path, trace_dir):
             antenna_name = f"pos_{d}_{theta}"
 
             df = pd.read_csv(trace_file, sep=r'\s*,\s*', engine='python', comment='!', header=None)
-            df.columns = ["t_us", "Re_Ex", "Im_Ex", "Re_Ey", "Im_Ey"]
-            df[["Re_Ex", "Im_Ex", "Re_Ey", "Im_Ey"]] *= 1e-11 #convert 100k/V to µV/m 
+            df.columns = ["t_us", "Re_Ex", "Re_Ey", "Im_Ex", "Im_Ey"]
+            df[["Re_Ex", "Re_Ey", "Im_Ex", "Im_Ey"]]*=1e-5 #convert 100kV/m to V/m 
             data = df.to_numpy(dtype='f8')
             dset = observer_grp.create_dataset(f"{antenna_name}", data=data)
             x, y = np.cos(np.deg2rad(float(theta))) * int(d), np.sin(np.deg2rad(float(theta))) * int(d)
             dset.attrs['position'] = np.array([x, y], dtype=float)
             dset.attrs["columns"] = np.array(df.columns, dtype='S')
-            dset.attrs["units"] = np.array(["nano s", "microV/m", "microV/m", "microV/m", "microV/m"], dtype='S')
+            dset.attrs["units"] = np.array(["nano s", "V/m", "V/m", "V/m", "V/m"], dtype='S')
 
     print(f"Stored time traces for all antennas in: '{hdf5_path}'")
 
@@ -265,7 +265,6 @@ if __name__ == "__main__":
             
     #add_observers_to_hdf5(hdf5_path, fitresult_path)
     add_timetraces_to_observers(hdf5_path, trace_dir)
-
     add_atmosphere_to_hdf5(hdf5_path, sh_current_path)
 
     
