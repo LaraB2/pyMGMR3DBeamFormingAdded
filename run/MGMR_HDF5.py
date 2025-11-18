@@ -224,7 +224,7 @@ def add_timetraces_to_observers(hdf5_path, trace_dir):
 
             df = pd.read_csv(trace_file, sep=r'\s*,\s*', engine='python', comment='!', header=None)
             df.columns = ["t_us", "Re_Ex", "Re_Ey", "Im_Ex", "Im_Ey"]
-            df[["Re_Ex", "Re_Ey", "Im_Ex", "Im_Ey"]]*=1e-5 #convert 100kV/m to V/m 
+            #df[["Re_Ex", "Re_Ey", "Im_Ex", "Im_Ey"]]*=1e-5 #convert 100kV/m to V/m 
             data = df.to_numpy(dtype='f8')
             dset = observer_grp.create_dataset(f"{antenna_name}", data=data)
             x, y = np.cos(np.deg2rad(float(theta))) * int(d), np.sin(np.deg2rad(float(theta))) * int(d)
