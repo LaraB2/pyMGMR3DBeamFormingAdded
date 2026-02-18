@@ -230,7 +230,7 @@ def add_timetraces_to_observers(hdf5_path, trace_dir):
             x, y = np.cos(np.deg2rad(float(theta))) * int(d), np.sin(np.deg2rad(float(theta))) * int(d)
             dset.attrs['position'] = np.array([x, y], dtype=float)
             dset.attrs["columns"] = np.array(df.columns, dtype='S')
-            dset.attrs["units"] = np.array(["nano s", "V/m", "V/m", "V/m", "V/m"], dtype='S')
+            dset.attrs["units"] = np.array(["mirco s", "V/m", "V/m", "V/m", "V/m"], dtype='S')
 
     print(f"Stored time traces for all antennas in: '{hdf5_path}'")
 
