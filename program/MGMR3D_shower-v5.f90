@@ -18,6 +18,7 @@
     use eventdata, only : Voltages, Core_N, Core_E, Ant_N, Ant_E,Eoff,Noff, RelMx_N, RelMx_E, RelMx_U
     use eventdata, only : vBE,vBN,vBU,vvBE,vvBN,vvBU, vBxvvB, SN, SE, SU, sZS, Ang_Ux, alpha_Bz
    use RFootPars, only : FShift_x,FShift_y, D_IMax
+   use RFootPars, only : QuadSmth, XdepFrc
     !use CrossProd,only : calc_alpha_vB
     !use CrossProd,only : calc_alpha_Bz
     implicit none
@@ -30,13 +31,14 @@
     real(dp), parameter :: X_EM=36.7d0
     integer :: i,j,CD_i,iXmx, I1,I2
     common /W_TrCurr/ Norm_tc,Moli_tc,s_tc,dalpha,Nrm_alpha(0:41)
-    real*8 :: Norm_tc, Moli_tc, s_tc, dalpha, Nrm_alpha, alpha, X_start, XXX, b_ground, H_s, NP_F
+    real*8 :: Norm_tc, Moli_tc, s_tc, dalpha, Nrm_alpha, alpha, X_start, XXX, b_ground, H_s, NP_F, HPenFac
     real*8 :: W_BxvxB  ! weight factor for BxvxB Lorentz force
     real*8 :: W_tc, Cos_Zenith,AirDensity(0:AtmHei_dim),R_base,R_Earth=6.3781d6 ! [m]
     real(dp) :: Xmax_0,Isqr_max,Isqr, h_f(0:N_step_max),F(0:N_step_max),ang(0:N_step_max),dfx,dfy
     Real(dp) :: SigX0, SigX1, SigX2, FF_tc ! (FF=Fudge Factor); testing different longtidudinal functions
     integer :: iImx, indx(1:N_step_max), iQmx
     logical,save :: FiPa=.true.
+    !Logical :: QuadSmth=.true.
     external W_tc
 !
     write(2,201) rh0*10000,Moli_tc, J0Q, SelectFh, lam_tc, lam_100, XDepAlpha
@@ -230,22 +232,41 @@
                   h_f(i)/1000.,F(i),ang(i)*180./pi , h_frc(i)/1000.,Force(i),alpha_frc(i)*180./pi &
                   , Force(i)*cos(alpha_frc(i)-alpha_Bz), Force(i)*sin(alpha_frc(i)-alpha_Bz)
             enddo
-            Do i=1,N_frc-1
-                if((h_frc(i)-h_frc(i+1)).lt.500 ) then
-                    PenFacHeight=PenFacHeight*(1.d0 + 4.*((h_frc(i)-h_frc(i+1))/500.-1)**2)
-                endif
-            enddo
         endif
+        !
+        ! Calculate penalty factor for heights that are in ill-range
+        ! AlternativeSmooth=.true.  !  ======
+        ! For too thin layers:
+        Do i=1,N_frc-1
+            !
+            ! Jan 2026:
+            If(AlternativeSmooth) then ! Exponentially convoluted step in downward direction
+               z=h_f(i)
+               j=z/AtmHei_step
+               HPenFac=3.*D_ESmooth*X_EM/AirDensity(j)
+               !write(2,*) 'shower: HeigtPenalty',i,j,z,z-h_f(i+1),HPenFac
+            Else
+               HPenFac=700.
+            EndIf
+            ! End Jan 2026:
+            !
+            if((h_f(i)-h_f(i+1)).lt.HPenFac ) then
+               PenFacHeight=PenFacHeight*(1.d0 + 4.*((h_f(i)-h_f(i+1))/HPenFac-1)**2)
+               !write(2,*) 'shower: HeigtPenalty',i,h_f(i),h_f(i)-h_f(i+1),HPenFac, PenFacHeight
+            endif
+            write(2,"(A,I1,' @',F7.1, 2(A,F7.1),A,F6.3, A,F6.3,A,L)") 'shower: delta-HeigtPenalty-check, layer#',i,h_f(i), &
+               ', thickness=',h_f(i)-h_f(i+1),', critical value=',HPenFac, ', penalty=',PenFacHeight, &
+               ', linear D_ESmooth=', D_ESmooth, ', AlternativeSmooth=', AlternativeSmooth
+        enddo
         ! h_f are heights above GroundLevel. Put penalty factor when this exceeds the top-level
         if((h_f(1)-AtmHei_dim*AtmHei_step).gt.1000 ) then
             PenFacHeight=PenFacHeight*(1.d0 + 4.*((h_f(1)-AtmHei_dim*AtmHei_step)/1000.-1)**2)
         endif
-        if(PenFacHeight.gt.1.) write(2,*) 'penalty factor for E-field configuration=', PenFacHeight
+        if(PenFacHeight.gt.1.) write(2,*) 'Height-penalty factor for E-field configuration=', PenFacHeight
         !
-        ! AlternativeSmooth=.true.  !  ======
-        H_s=700.  ! shift in height [m]
-      !  H_s=000.  ! shift in height [m]
-        write(2,*) 'H_s=',H_s,'[m] and D_ESmooth=', D_ESmooth
+        !H_s=700.  ! shift in height [m]
+        H_s=000.  ! shift in height [m]
+        write(2,*) 'H_s=',H_s,'[m] and D_ESmooth=', D_ESmooth,', Quadr-Smooth=',QuadSmth
         Do j=1,N_frc
             z=abs(h_f(j))/Cos_Zenith ! calculated distance along shower axis, assuming flat Earth for simplicity
             i=z/AtmHei_step
@@ -254,13 +275,21 @@
                 ! Alternative
                 I1=i
                 b=PenDepth(I1) -(z-I1*AtmHei_step)*AirDensity(I1)
-                write(2,*) 'D_ESmooth=', D_ESmooth, &
-                        ' with dx*e^{dx/DEs*X0} gives smoothing distance',D_ESmooth*X_EM/AirDensity(I1)
+                !write(2,*) 'D_ESmooth=', D_ESmooth, &
+                !        ' Linear, with smoothing distance',D_ESmooth*X_EM/AirDensity(I1)
                 Do i=I1,0,-1  ! calculate contribution of this step to all lower heights
                     height=i*AtmHei_step  ! distance along shower
                     !a=1.d0 -exp( -(PenDepth(i) - b )/(D_ESmooth*X_EM) ) ! folding with e^{dx/DEs*X0}
                     c=(PenDepth(i) - b )/(D_ESmooth*X_EM)
-                    c=c*c  !  make it always positive
+                    !
+                    ! Jan 2026:
+                    If(QuadSmth) Then
+                        c=c*c  ! old: make it always positive
+                    Else
+                        If(c.lt.0.) c=0.  ! Jan 2026: changed from quadratic to linear dependence, may requir a re-adjusting of D_ESmooth
+                    EndIf
+                    ! End Jan 2026:
+                    !
                     If(c.gt.5000.) Then
                         a=1.d0
                     Else
@@ -273,21 +302,20 @@
             else  ! best fit, 2layr: D_ESmooth=2.5; 3layr: D_ESmooth=1.3
                b=(PenDepth(i)-PenDepth(i+1))/(AtmHei_step*X_EM)  ! convert AtmHei_step  to change in X  = AirDensity(i)
                b= D_ESmooth*b
-               XXX=b*H_s
                !write(2,*) 'H_s=',H_s,'[m] and D_ESmooth=', D_ESmooth
                Do i=AtmHei_dim,0,-1    ! calculate transverse force
-                 height=i*AtmHei_step  ! *Cos_Zenith for vertical height above ground
+                 height=i*AtmHei_step+H_s  ! *Cos_Zenith for vertical height above ground + added bias
                  ! a=1.d0/(1.d0+exp(0.5*(height-abs(h_f(j)))/AtmHei_step))
-                 If( (XXX+b*(height-z)) .gt. 1000.) then  ! distances measured along shower axis
+                 If( (b*(height-z)) .gt. 1000.) then  ! distances measured along shower axis
                   a=0.
-                 ElseIf( (XXX+b*(height-abs(h_f(j)))) .lt. -1000.) then
+                 ElseIf( (b*(height-abs(h_f(j)))) .lt. -1000.) then
                   a=1.
                  Else
-                  a=1.d0/(1.d0+exp(XXX+b*(height-abs(h_f(j)))) )  ! Smoothing of height dependence
+                  a=1.d0/(1.d0+exp(b*(height-abs(h_f(j)))) )  ! Smoothing of height dependence
                  EndIf
                  Force_x(i)=Force_x(i)+ a*F(j)*cos(ang(j))
                  Force_y(i)=Force_y(i)+ a*F(j)*sin(ang(j))
-                enddo
+               enddo
             endif
         enddo
       elseif(line) then
@@ -318,7 +346,7 @@
 !
 !stop
    OPEN(UNIT=4,STATUS='unknown',FILE=trim(FileShCurrent)//'.dat')
-   write(2,*) 'Initialize_shower:AtmHei_dim=',AtmHei_dim, X_start, PenDepth(AtmHei_dim), PenDepth(AtmHei_dim/2)
+   !write(2,*) '!Initialize_shower:AtmHei_dim=',AtmHei_dim, X_start, PenDepth(AtmHei_dim), PenDepth(AtmHei_dim/2)
    write(4,"('!',7x,'z [km],',18x,'X [g/cm^2],',16x,'mean refractivity,',12x,'Ix,',23x,'Iy,',19x,'Ch Excess,',&
      19x,'dxi,',19x,'alpha_tr,',19x,'F_x,',23x,'F_y,', &
      ! 19x,'Ix/N,',23x,'IQ/N,', &
@@ -357,8 +385,9 @@
    SigX1=SigX1*SigX1
    NP_F=0.15 ! 0.10
    FF_tc=1.0
-   write(2,*) 'NP_F=',NP_F,' in "NPart*(1. +NP_F*(rho(1)/rho(i))*(Force_x(i)**2 + ..."'
-   write(2,*) 'Shower-power:', ((X_max-X_0)/lamx), ((X_max2-X_02)/lamx2)
+   !write(2,*) 'NP_F=',NP_F,' in "NPart*(1. +NP_F*(rho(1)/rho(i))*(Force_x(i)**2 + ..."'
+   write(2,*) 'Shower-power:', ((X_max-X_0)/lamx), ((X_max2-X_02)/lamx2),', add. X-dep. corr. Long function=',XdepFrc, &
+      ', NP_F=',NP_F
    flush(unit=2)
    Do i=AtmHei_dim-1,0,-1    ! calculate currents
       npart2=0.
@@ -400,7 +429,8 @@
         NPart=NPart*(1. +NP_F*(AirDensity(1)/AirDensity(i))*(Force_x(i)**2 + Force_y(i)**2)/(100.*Force0*Force0)) ! to account for particle production with a strong force
         !----------------------------------
         ! FudgeFactor for testing different forms longitudinal function transverse current
-        !FF_tc=exp(-(XmaxAve-X_rh)**2/SigX0)  !take out, Sept 2021
+        If(XdepFrc) FF_tc=exp(-(XmaxAve-X_rh)**2/SigX0)  !take out, Sept 2021
+        ! The above line has a strong effect on the fit quality !!!!!!!!!!!!!!!!!!!!!!!!
         !--------------------
         If(vDrift2) then
             BoF = 9.*X_rh*sqrt(XmaxAve*Xmax_0)/((XmaxAve + 2.*X_rh)*(XmaxAve + 2.*X_rh)) / F_over_beta
