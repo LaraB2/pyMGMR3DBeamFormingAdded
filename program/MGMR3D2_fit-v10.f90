@@ -1,21 +1,30 @@
 ! Main program ----------------
 !------------------------------
-    Include 'MGMR3D_RFootPars-v5.f90'  ! contains CrossProd; July 2020: fit parameters changed
-    Include 'MGMR3D_BA-v4.f90'
+    Include 'Constants-v10.f90'
+    Include 'MGMR3D2_Atmosphere.f90'
+    Include 'MGMR3D2_PancakeFunct.f90'
+    Include 'MGMR3D2_LateralDistr.f90'
+    Include 'MGMR3D2_BA-v10.f90'
+    Include 'MGMR3D2_RFootPars-v10.f90'  ! contains CrossProd; July 2020: fit parameters changed
     Include 'MGMR3D_FFT.f90'
-!    Include 'C:\Users\Olaf Scholten\Documents\AstroPhys\Lightning\Imaging\LMA\LMA2019\Program/AntFuncCnst.f90' !Take this out when using the LINUX makefile
-!    Include 'C:\Users\Olaf Scholten\Documents\AstroPhys\Lightning\Imaging\LMA\LMA2019\Program/AntFunct.f90' !Take this out when using the LINUX makefile
-    Include '/Users/users/scholten/LOFLI/FORTRANsrc/AntFuncCnst.f90'
-    Include '/Users/users/scholten/LOFLI/FORTRANsrc/AntFunct.f90'
-    Include 'MGMR3D_analyse-v5.f90'
-    Include 'MGMR3D-v4.f90'
-    Include 'MGMR3D_SetParams-v4.f90'
+    !Include 'C:\Users\Olaf Scholten\Documents\AstroPhys\Lightning\Imaging\LMA\LMA2019\Program/AntFuncCnst.f90' !Take this out when using the LINUX makefile
+    !Include 'C:\Users\Olaf Scholten\Documents\AstroPhys\Lightning\Imaging\LMA\LMA2019\Program/AntFunct.f90' !Take this out when using the LINUX makefile
+    Include '../../LOFLI/FORTRANsrc/AntFuncCnst.f90' !Take this out when using the LINUX makefile
+    Include '../../LOFLI/FORTRANsrc/AntFunct.f90' !Take this out when using the LINUX makefile
+    Include 'MGMR3D2_analyse-v10.f90'
+    Include 'MakeGLEplots.f90'
+    Include 'MGMR3D2-v10.f90'
+    Include 'MGMR3D2_subr-v10.f90'
+    Include 'MGMR3D2_Source-v10.f90'
+    Include 'MGMR3D2_SourceKernel-v10.f90'
+    include 'MGMR3D_spline.f90'
+    Include 'MGMR3D2_SetParams-v10.f90'
     Include 'MGMR3D_Fit_RadioFoot-v4.f90'
-    Include 'MGMR3D_shower-v5.f90'
-!    Include 'C:\Users\Olaf Scholten\Documents\AstroPhys\Lightning\Imaging\LMA\LMA2019\Program/nl2sol.f90' !Take this out when using the LINUX makefile
-    Include '/Users/users/scholten/LOFLI/FORTRANsrc/nl2sol.f90'
+    Include 'MGMR3D2_shower-v10.f90'
+    !Include 'C:\Users\Olaf Scholten\Documents\AstroPhys\Lightning\Imaging\LMA\LMA2019\Program/nl2sol.f90' !Take this out when using the LINUX makefile
+    Include '../../LOFLI/FORTRANsrc/nl2sol.f90' !Take this out when using the LINUX makefile
 !------------------------------
-	program MGMR3D_fit
+	program MGMR3D2_fit
 ! subversion sept 18 concerns the following bugs:
 !- Fitting of intensity now works even if there is no E-field specified
 !- The default charge excess has been set to 0.22. This should correct for a cos(27deg) that was probably forgotten in generating fig 2 of the manual.
@@ -23,7 +32,7 @@
 ! Oct 2019: L,R parametrization for shower profile included
 ! Oct 2019: separate parameters Xb_0 and Xc_0 introduced to parametrize charge excess and drift vel.
     use eventdata, only : Fitting,ReadInput, ShPlane, NoisePower
-    use eventdata, only : FileFitResult,FileShCurrent
+    use eventdata, only : FileFitResult,FileShCurrent, PlotBase
     use eventdata, only : distance_antenna, phi_antenna, N_ant_max, N_ant, ZenithAngle_shower
     use eventdata, only : N_ant,St_I, St_Q, St_U, St_V, sigma_I, sigma_Q, sigma_U, sigma_V
     use eventdata, only : N_scnt, x_scnt, y_scnt, LORA, sigma_LORA, N_scnt_max
@@ -37,8 +46,8 @@
     use BigArrays, only : ObsDist_dim, ObsDist_Step
     use CrossProd,only : calc_alpha_vB
     use T_Analyze, only : Analyze  ! subroutine
-   use CPU_timeUsage, only : CPU_usage
-	implicit none
+    Use Systemcommands, only : MakeGLEplots
+	 implicit none
     INTEGER DATE_T(8),i,WLength
     CHARACTER*12 REAL_C(3)
 	character*80 :: lname
@@ -69,13 +78,11 @@
  !   read(4,*,iostat=nxx) lname
 !    write(2,*) eventid,az_arrival
 !
-    release='v5.1, March 2023'
+    release='v0.1, October 2023'
     write(*,*) 'starting'
+    Fitting=.true.
     call SetParams
     ReadInput=.false.
-    Fitting=.true.
-    Call CPU_usage('starting')
-    !
     !
     If(step .or. stpv) then
         WLength=N_step_max
@@ -89,8 +96,8 @@
     endif
     !
    CALL get_environment_variable("LIBRARY", ldata)
-   WRITE (*,*) "LIBRARY=",TRIM(ldata)
-   WRITE (2,*) "LIBRARY=",TRIM(ldata)
+   !WRITE (*,*) "LIBRARY=",TRIM(ldata)
+   !WRITE (2,*) "LIBRARY=",TRIM(ldata)
    !
    write(2,"('possible fit parameters:',/,10(A7,', '))") (AParMnm(i),i=1,N)
    Call GetNonZeroLine(lname)
@@ -131,11 +138,15 @@
      write(2,*) 'No Pulse time traces written to file=',trim(FileFitResult)//'ttrace-ddd-ttt.csv'
    endif
    write(2,*) 'Shower current structure written to file=',trim(FileShCurrent)//'.dat'
+   !
    write(2,*) 'data read from file=',trim(fname)
    OPEN(UNIT=4,STATUS='old', FILE=trim(fname),err=9)
    write(2,*) 'data comparison written to file=',trim(FileFitResult)//'.dat'
    read(4,*,iostat=nxx) fnamex
-   if(nxx.ne.0) goto 8
+   if(nxx.ne.0) Then
+      write(2,*) 'Reading error on data file'
+      Stop 'read error'
+   EndIf
    If(fnamex.eq.'!Voltages:') then
       Voltages=.true.
       Fit_StI=.true.
@@ -297,25 +308,23 @@
     close(unit=4)
     !
     write(2,*) 'event number=',oid,' , # antennas=',N_ant,' , # scintillators=',N_scnt,', Zenith angle=',ZenithAngle_shower
+    If(.not. Fitting) goto 9
 !
     call Fit_RadioFoot
     !write(2,*) 'call Fit_RadioFoot done!', Fitting
     !flush(unit=2)
     !Ft=.not.Fitting
     !Call  Analyze(Ft)
-    stop
+    goto 8
     !
 9   Fitting=.false.
     write(2,*) 'Input-data file could not be found!'
     call calc_alpha_vB !(vBE,vBN,vBU,vvBE,vvBN,vvBU)
     call MGMR3D
     !Call  Analyze(Fitting) does not work as all intermediate results are cleaned after leaving MGMR
-
-    stop
 8 continue
-   write(2,*) 'Reading error on data file'
-   Stop 'read error'
-    end program MGMR3D_fit
+    Call MakeGLEplots(Submit=.true.)
+    end program MGMR3D2_fit
 !
 !------------------------------
 !    include 'C:/OlafsUtil/LSQ/nl2sol.f90'

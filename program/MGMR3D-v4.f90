@@ -353,8 +353,8 @@
     Call  Analyze(fitting)
 !
     CALL DATE_AND_TIME (REAL_C(1),REAL_C(2),REAL_C(3),DATE_T)
-    write(*,232) 'endgame',(DATE_T(i),i=5,8)
-    write(2,232) 'endgame',(DATE_T(i),i=5,8)
+    !write(*,232) 'endgame',(DATE_T(i),i=5,8)
+    !write(2,232) 'endgame',(DATE_T(i),i=5,8)
 232 FORMAT(3X,'start ',A10,' @ ',I2,':',I2,':',I2,'.',I3,1X,25(1H-))
     Flush(unit=2)
 !

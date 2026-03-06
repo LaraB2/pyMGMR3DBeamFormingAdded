@@ -140,6 +140,8 @@ subroutine CompareRadioFoot ( meqn, nvar, x, nf, r, uiparm, urparm, ufparm )
 !    Input, external UFPARM, an external reference to a user subroutine
 !       or function.
 !
+   use RFootPars, only : NF_max
+   use CPU_timeUsage, only : CPU_usage
    implicit none
    integer ( kind = 4 ) meqn
    integer ( kind = 4 ) nvar
@@ -156,6 +158,7 @@ subroutine CompareRadioFoot ( meqn, nvar, x, nf, r, uiparm, urparm, ufparm )
    common /W_TrCurr/ Norm_tc,Moli_tc,s_tc,dalpha,Nrm_alpha(0:41)
    real*8 :: Norm_tc, Moli_tc, s_tc, dalpha, Nrm_alpha, p_ang
    Real(dp) :: RelAnt_N, RelAnt_E, Antx,Anty
+   Logical, save :: LastIteration=.false.
    !
 !    N_ant=meqn/4
     write(2,*)
@@ -166,6 +169,12 @@ subroutine CompareRadioFoot ( meqn, nvar, x, nf, r, uiparm, urparm, ufparm )
         write(2,200) NF, X
         write(*,200) NF, X
 200     format('Fitting-try',I3,':',15(G12.6,','))
+         If(LastIteration) Then
+            write(2,*) 'Stop fitting process because max# of iterations has been reached'
+            write(*,*) 'Stop fitting process because max# of iterations has been reached'
+            STOP 'Max iterations'
+         EndIf
+         If(NF.gt.NF_max) LastIteration=.true.
     endif
     call MGMR3D
     chisq_I=0. ; chisq_Q=0. ; chisq_U=0. ; chisq_V=0. ; chisq=0.
@@ -276,10 +285,12 @@ subroutine CompareRadioFoot ( meqn, nvar, x, nf, r, uiparm, urparm, ufparm )
     !write(2,*) 'RadioFit-ReducedChisq',' all=',(chisq)/meqn,'; I=',(chisq_I)/N_ant,'; Q=',(chisq_Q)/N_ant,&
     !     '; U=',(chisq_U)/N_ant,'; V=',(chisq_V)/N_ant, '; norm=',norm*LOFAR2MGMR
     write(2,"('RadRedChisq; all=',g11.5,'; I=',g11.5,'; Q=',g11.5,'; U=',g11.5,'; V=',g11.5, '; norm=',g11.5, &
-      '; ReNorm=',g11.5)") &
+      '; ReNorm=',g11.5'; total chi^2=',g11.5)") &
         chisq/meqn, chisq_I/N_ant, chisq_Q/N_ant, chisq_U/N_ant,chisq_V/N_ant,norm*LOFAR2MGMR, &
-        norm*LOFAR2MGMR/(Moli_tc*Moli_tc*(RnrmA-RnrmB* X_max/300))
+        norm*LOFAR2MGMR/(Moli_tc*Moli_tc*(RnrmA-RnrmB* X_max/300)),chisq
     write(*,*) 'ReducedChisq=',(chisq)/meqn
+    Call CPU_usage()
+    !
     OPEN(UNIT=4,STATUS='unknown',FILE=trim(FileFitResult)//'.dat' ) !'plot/FitResult.dat')
     write(4,"('!CoreDist[m], phi[rad]',3x,'I',11x,'I_calc',8x,'sigma_I',7x,'Q',9x,'Q_calc',4x,'sigma_Q',3x,&
         'U',9x,'U_calc',4x,'sigma_U',3x,'V',9x,'V_calc',4x,'sigma_V',2x,'Ant_x',2x,'Ant_y',2x,'2ph_pol/pi')")

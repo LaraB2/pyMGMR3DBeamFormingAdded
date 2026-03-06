@@ -31,6 +31,8 @@
       Real(dp), save :: R_02=0.28, L_02=215.  ! Parametrization long. profile for second bump
       real(dp)  :: X_0, X_max  ! Possible to fit
       real(dp)  :: X_02=100d0, lamx2=100d0, X_max2=600d0, Energy_sh2 ! second bump LDF
+      Logical, save :: QuadSmth=.false.
+      Logical,save :: XdepFrc=.true.
       real(dp), save :: D_IMax
       real(dp), save :: Zen_sh, Azi_sh  ! [deg], [North:Azi=90, East:Azi=0]
       real(dp), save :: alpha_vB=90., J0t, Zen_B, Azi_B  ! [deg], [North:Azi=90, East:Azi=0]
@@ -47,6 +49,7 @@
       character (len=7), save :: AParMnm(N_FitPar_max)
       integer, save :: FitParam(N_FitPar_max), N_FitPar
       Logical, save :: Fit_StI=.false.   ! if =.true. only Stokes-I is fitted
+      Integer, save :: NF_max=10
       common / All_Params / J0Q,lamx,X_0,X_max,D_ESmooth,u0,XDepAlpha,MoliereRadius,FShift_x,FShift_y,ForceL,alpha_frcL,h_frcL
       character (len=7) :: AParMnmBas(N_FitPar_bas)=(/ &
           '    J0Q','   lamx','    X_0','  X_max','D_ESmth','     u0','XDepAlp','MollyRd','Shift_x','Shift_y'   /)
@@ -194,4 +197,51 @@ contains
     !
     end subroutine calc_alpha_Bz
 end module CrossProd
+!==========================================
+Module CPU_timeUsage
+   use constants, only : dp
+
+   Integer, save :: WallCount
+   Real,save :: CPUTime=-1., WallTime, CPUstartTime, WallstartTime, WallRate, CPUtimeUse
+!--------------------
+   CONTAINS
+   !
+Subroutine CPU_usage(Message)
+   IMPLICIT NONE
+   Character(len=*), intent(in), optional :: Message
+   Logical, save :: First=.true.
+   !
+   call cpu_time(CPUTime)
+   CALL SYSTEM_CLOCK(WallCount, WallRate)  !  Wallcount_rate)
+   If(present(Message)) write(2,"(1x,A,1x)", ADVANCE='NO') TRIM(Message)//': '
+   If(First) Then
+      WallstartTime=WallCount/WallRate
+      CPUstartTime=CPUTime
+      WRITE(2,"(A,F12.6,A,F12.3,A)") 'CPU start time:', CPUTime, '[s], wall start time=',WallstartTime, '[s]'
+      First=.false.
+   Else
+      WallTime=WallCount/WallRate - WallstartTime
+      CPUtimeUse=CPUTime-CPUstartTime
+      WRITE(2,"(A,F12.6,F11.3,A, A,' & ',A )") 'CPU & Wall time used:', CPUTimeUse, WallTime, '[s] =',&  ! count_rate, count_max
+         Convert2HMs(CPUTimeUse),Convert2HMs(WallTime)
+   EndIf
+   Flush(unit=2)
+   !
+End    Subroutine CPU_usage
+!-----------------------------
+Function  Convert2HMs(t_s)
+   IMPLICIT NONE
+   Real, intent(in) :: t_s
+   Character(len=12) :: Convert2HMs
+   Integer :: t_h,t_m
+   Real :: t_sr  ! residual seconds
+   !
+   t_h=FLOOR(t_s/3600.)
+   t_sr=t_s - t_h*3600.
+   t_m=FLOOR(t_sr/60.)
+   t_sr=t_sr - t_m*60.
+   write(Convert2HMs,"(I3,':',I2.2,':',F5.2)") t_h,t_m,t_sr
+End Function Convert2HMs
+
+End Module CPU_timeUsage
 !-----------------------------------------
