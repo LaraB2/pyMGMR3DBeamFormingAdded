@@ -1,31 +1,42 @@
 ! =?
-  &ShPars IntegrateCurrent=-0.01 
-  Intensity_Weight=.false.
- SAMPLINGTIME= 5     ! in [ns]
- MOLIERERADIUS=  50.0  ,
- StParRange = -11    ! in down-sampled sample times for calculation of Stokes parameters
- F_lim=1.
- J0T = 14.77, zen_B=22.19 , azi_B=-90.   ! direction magnetic field at LOFAR (49.5 mu T)
- lamx=82.15, x_0=100.58, X_max=696.05, GROUNDLEVEL=  7.6
- D_ESmooth= 7. , MOLIERERADIUS= 0, u0 = 10.
- D_ESmooth= 0.4 , AlternativeSmooth = .true.
- J0Q=0.21
- ObsDist_dim= 80
- energy_sh=4217212.07
- Intensity_weight = .false.
- Fit_StI = .false.
- RnrmA=3.25, RnrmB=0.65
- Zen_sh=45.0, Azi_sh=80.0
-nu_min=0 , nu_max=10000
- SAMPLINGTIME= 0.2     ! in [ns]
+&ShPars 
+IntegrateCurrent=-0.01 
+Intensity_Weight=.false.
+MOLIERERADIUS=  50.0
+StParRange = -11    ! in down-sampled sample times for calculation of Stokes parameters
+F_lim=1.
+J0T = 14.77
+D_ESmooth= 7.
+u0 = 10.
+AlternativeSmooth = .true.
+J0Q=0.21
+ObsDist_dim= 80
+Fit_StI = .false.
+RnrmA=3.25, RnrmB=0.65
 ! ------------------
- lamx2=100.0
-  X_02=  749.62     ,
- X_MAX2=  1121.3     ,
- ENERGY_SH2= 421721.20700000005     ,
- OutFileLabel="SIM000001" ,
- X_max=696.05
-   &end
+Zen_sh=45.0
+Azi_sh=80.0
+nu_min=0 
+nu_max=10000
+zen_B=22.19
+azi_B=-90.   ! direction magnetic field at LOFAR (49.5 mu T)
+atm_model_id=1,    !
+GroundLevel=760, ! Height of South Pole station in meters
+SAMPLINGTIME=0.2     ! in [ns]
+! ------------------
+lamx=82.15
+X_0=10.0
+X_max=696.05
+energy_sh=4217212.07
+! ------------------
+lamx2=100.0
+X_02=  749.62
+X_MAX2=  1121.3
+ENERGY_SH2= -421721.0
+! ------------------
+OutFileLabel="SIM000001"
+X_max=696.05
+&end
 
  0.0, 0.0 ,0 -0.0  ! shift_x [m], shift_y [m], alpha_vB [deg]  !30,10 or 10,20 or -10,30?
 

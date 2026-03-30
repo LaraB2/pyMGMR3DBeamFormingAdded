@@ -96,6 +96,9 @@ cd "${RUN_FOLDER}" || { echo "Error: Could not change back to run directory ${RU
 # Create a temporary 'plot' directory within the run folder for intermediate output.
 # Execute the MGMR program, feeding it the input file's content.
 mkdir -p "${RUN_FOLDER}/plot"
+echo "Preparing Atmospheric Parameters..."
+# Run the python script first. It creates 'current_atm.dat'
+python3 "${RUN_FOLDER}/atm_models.py" "$INPUT_FILE"
 "${PROG_DIR}/MGMR3D_fit-v5" < "$INPUT_FILE"
 
 # --- Plotting with GLE and Python ---
