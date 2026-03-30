@@ -19,6 +19,7 @@
     use eventdata, only : vBE,vBN,vBU,vvBE,vvBN,vvBU, vBxvvB, SN, SE, SU, sZS, Ang_Ux, alpha_Bz
    use RFootPars, only : FShift_x,FShift_y, D_IMax
    use RFootPars, only : QuadSmth, XdepFrc
+   use Atmosphere, only : atmparams, b_arr, c_arr
     !use CrossProd,only : calc_alpha_vB
     !use CrossProd,only : calc_alpha_Bz
     implicit none
@@ -100,7 +101,8 @@
     !
     !       Calculate things as function of height above ground @ GroundLevel
     ! xi(0)=rh0 If at sea level
-    IndRefOrho=rh0/0.122980582373297d0  ! index of refraction Over density; ground density=b/c=0.12298058237329704717942323852797
+    !IndRefOrho=rh0/0.122980582373297d0  ! index of refraction Over density; ground density=b/c=0.12298058237329704717942323852797
+    IndRefOrho = rh0 / (b_arr(1) / c_arr(1))
     R_base=R_Earth + GroundLevel
     RPenDepth(0)=0.  !  Relative penetration depth compared to that at ground-level
     Height=GroundLevel
@@ -112,6 +114,7 @@
         Height_p=sqrt(z_p*z_p + 2.d0*R_base*z_p*Cos_Zenith + R_base*R_base) - R_Earth ! Vertical height above sea level [m]
         ! This accounts for the curvature of Earth
         !write(2,*) height-(z*Cos_Zenith + GroundLevel)
+        if (height < GroundLevel) height = GroundLevel
         call AtmParams(height,a,b,c)
         AirDensity(i)=(b/c) * exp(-height/c)
         !If(HoriShwr) then
@@ -437,6 +440,7 @@
         else
             !v2!BoF = 4./((X_max-Xb_0)/(X_rh-Xb_0) + 3.)*sqrt(0.06/AirDensity(i)) / F_over_beta ! v2 Beta over force corrected for atm.
             !v3: BoF = 4./((X_max-Xb_0)/(X_rh-Xb_0) + 3.)/ F_over_beta ! v3 Beta over force corrected for atm.
+            ! Find the index
             BoF = 4./((XmaxAve-Xb_0)/(X_rh-Xb_0) + 3.)*sqrt(AirDensity(iXmx)/AirDensity(i)) / F_over_beta ! v3b Beta over force corrected for atm.
             ! The problem with this BoF is that for double-humped showers the order in which sh1 and sh2 are given start to matter.
             ! see https://en.wikipedia.org/wiki/Drag_(physics) where the concept of 'terminal velocity'

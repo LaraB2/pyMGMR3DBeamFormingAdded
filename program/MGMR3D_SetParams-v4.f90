@@ -18,6 +18,7 @@
     use BigArrays, only : ObsDist_dim, ObsDist_Step, AtmHei_step, AtmHei_dim, LamInt_dim
     use BigArrays, only : nuTrace_step, nuTrace_dim, tTrace_step, tTrace_dim_b, tTrace_dim_o, tTrace_Offset
     use eventdata, only : Voltages, Energy_sh, NoisePower, OutFileLabel
+    use Atmosphere, only : setup_atmosphere
     implicit none
 !    logical first
     INTEGER DATE_T(8),i
@@ -31,15 +32,20 @@
     character*1 :: Digit
     real(dp) :: SamplingTime,h(0:N_step_max),F(0:N_step_max),a(0:N_step_max),dfx
     real(dp) :: sin_alpha
+    integer :: atm_model_id
     NAMELIST /ShPars/ OutFileLabel,test,AtmHei_dim,AtmHei_step, &
         SelectFh, lam_tc ,lam_100, XDepAlpha, IntegrateCurrent, PancakeIncField,  &
         ObsDist_dim, ObsDist_Step,  tTrace_step, lamx, u0, a_ChX, J0Q, padding, D_ESmooth, AlternativeSmooth, u0, &
-        F_lim, nu_min,nu_max, SamplingTime, StParRange, Voltages, rh0,MoliereRadius, J0t, GroundLevel, X_0, X_max, &
+        F_lim, nu_min,nu_max, SamplingTime, StParRange, Voltages, rh0,MoliereRadius, J0t, atm_model_id, GroundLevel, X_0, X_max, &
         RnrmA, RnrmB, Zen_sh, Azi_sh, Zen_B, Azi_B, Intensity_Weight, NoisePower, Energy_sh, RL_param, R_0,L_0, Fit_StI, &
         X_02, lamx2, X_max2, R_02,L_02, Energy_sh2, NF_max, QuadSmth, XdepFrc
-    !
+    atm_model_id = 1  ! Default to US Standard
+    ! --- NEW: Load the flexible atmosphere ---
+    ! You can hard-code the filename or pass it as a variable
+    call setup_atmosphere('current_atm.dat', GroundLevel)
+    ! -----------------------------------------
     Test=.false.
-    AtmHei_dim=2000d0 ; AtmHei_step=10.d0 ! [m]
+    AtmHei_dim=3000d0 ; AtmHei_step=10.d0 ! [m]
     Energy_sh=1.d9  ! energy in [GeV]
     Energy_sh2=-1.
     ObsDist_dim=42 ; ObsDist_Step=10.
@@ -57,10 +63,11 @@
     F_lim=1. ! limiting force in units of 100 keV/m applied in fitting
     !
     !pi=2._dp *asin(1._dp)  ! This is the real constant pi, now set in constants
+    read(*, NML = ShPars)
     OutFile='MGMR3D_fit-'
-!    first=.true.
-    read(*,NML = ShPars)
+    !write(*, NML = ShPars) 
     OPEN(UNIT=2,STATUS='unknown',FILE=TRIM(OutFile)//TRIM(OutFileLabel)//'.out')
+!    first=.true.
 !- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     write(2,"(3x,5(1H-),1x,'MGMR3D_fit release of ',A22,25(1H-))") release
     CALL DATE_AND_TIME (REAL_C(1),REAL_C(2),REAL_C(3),DATE_T)

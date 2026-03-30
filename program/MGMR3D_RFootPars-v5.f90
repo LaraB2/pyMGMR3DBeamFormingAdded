@@ -2,6 +2,8 @@
 !-----------------------------------------
     module RFootPars
       use constants, only : dp
+      use Atmosphere, only : rh0 => rh0_val  ! Alias it so existing code works
+      implicit none
 !      real(dp), save :: J0y,lamy,X_may  ! Not used any more
       character (len=22), save :: release='August 5, 2018(Sept18)'
       integer, parameter :: N_FitPar_bas=10
@@ -13,7 +15,7 @@
       real(dp) :: J0Q=0.25d0, lamx=100d0, XDepAlpha=0.0 ! Possible to fit
       real(dp), save :: lam_tc=0.05d0  ! july 202, moved out of fit common block
       real(dp), save :: lam_100=7.d0  ! july 202, moved out of fit common block
-      real(dp), save :: rh0=0.000292d0, a_ChX=2.5
+      real(dp), save :: a_ChX = 2.5
       real(dp) :: u0=60.d0/F_over_beta ! kV/m. determines saturation velocity, fit parameter per July 2020
       !real(dp), save :: F_over_beta=280. ! [keV/m] from CONEX calculation by Krijn
       real(dp), save :: PancakeIncField=0.41d0
