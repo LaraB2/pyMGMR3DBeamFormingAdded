@@ -1,0 +1,311 @@
+size   25 38 ! 26
+! begin rotate -90
+set font pstr
+!translate -28 0
+set hei .6
+H=9
+B=9
+bsh=3.0
+dB=bsh+B
+dH=bsh+H
+set lwidth 0.02
+
+dir$='../runs/plot/'
+if(nargs() > 0 ) then 
+    dir$=arg$(1)
+end if
+file$=dir$+"FitResult.dat"
+Grid$=dir$+"grid"
+
+set font texcmr
+set lwidth .03
+
+include "color.gle"
+include "MaxMin.gle"
+include "RdYlBl.gle"
+ 
+sub Contr file$ Titl$
+   cc_Stp=   (cc_max-cc_min)/10
+   begin contour     ! needed for making contours, produes "file-cdata.dat" and "file-clabels.dat" from "file.z" created earlier
+      data file$+".z"
+      values from cc_min to cc_max step cc_Stp
+   end contour
+   begin graph
+      size B H
+      vscale 1
+      hscale 1
+      !title "Stokes "+Titl$
+      !xtitle xLab$
+      !ytitle yLab$
+      !xticks color white
+      !yticks color white
+      xaxis off
+      yaxis off
+      if Titl$="I" then
+         !colormap file$+".z" 500 500 color zmin cc_min zmax cc_max palette palette_Lightning
+         colormap file$+".z" 500 500  zmin cc_min zmax cc_max palette palette_Lightning
+      Else if Titl$="\Psi" then
+         colormap file$+".z" 500 500  zmin cc_min zmax cc_max palette palette_PolarAngle
+      Else if Titl$="\phi" then
+         colormap file$+".z" 500 500  zmin cc_min zmax cc_max palette palette_blue_purple_red_green2
+      Else
+         colormap file$+".z" 500 500  zmin cc_min zmax cc_max palette palette_blue_white_red
+      end if
+      !data file$+"-cdata.dat"  ! for the actual drawing of the contours (made by Contour)
+      !d1 line color white lwidth 0.02
+   end graph
+   !
+!   if Titl$="I" then  ! plot color bar
+!      amove xg(xgmax)+0.5 yg(ygmin)
+!      color_range_vertical zmin cc_min zmax cc_max*Norm_I zstep cc_Stp palette palette_Lightning pixels 1500 format "eng 2 append I"
+!      !contour_labels file$  "fix 0"
+!   end if
+!   if Titl$="U/I" then  ! plot color bar
+!      amove xg(xgmax)+0.5 yg(ygmin)
+!      color_range_vertical zmin cc_min zmax cc_max zstep cc_Stp palette palette_blue_white_red pixels 1500 format "eng 2"
+!      !contour_labels file$  "fix 0"
+!   end if
+end sub
+
+sub StokesMap label$
+begin graph
+  size B H
+  vscale 1
+  hscale 1
+  xaxis min LdistX max UdistX ! dticks 100 dsubticks 20 hei .7 !nolast
+  yaxis min LdistY max UdistY ! dticks 100 dsubticks 20 hei .7 
+  xticks length .3
+  yticks length .3
+  xsubticks length .1
+  ysubticks length .1
+  xtitle "[m]"
+    if label$ = "I" then 
+        data file$ d1=c15,c16 d2=c1,c3  d3=c1,c4   
+    else if label$ = "Q/I" then  
+        data file$ d1=c15,c16 d2=c1,c6  d3=c1,c7
+    else if label$ = "U/I" then  
+        data file$ d1=c15,c16 d2=c1,c9  d3=c1,c10
+    else if label$ = "V/I" then  
+        data file$ d1=c15,c16 d2=c1,c12  d3=c1,c13
+    else if label$ = "\Psi" then  
+        data file$ d1=c15,c16  d2=c1,c17
+    else if label$ = "\phi" then  
+        data file$ d1=c15,c16 d2=c1,c12  d4=c1,c7 d5=c1,c10
+        let d3=atan(d5/d4)  ! U/Q tan2(q,u)  twice the polarization angle
+    end if  
+  end graph
+begin key
+    nobox
+    position tr
+    set color black
+    text label$
+end key
+    for i = 2 to ndata(d1)
+        x = dataxvalue(d1,i) ! *cos(datayvalue(d1,i))
+        y = datayvalue(d1,i) ! dataxvalue(d1,i)*sin(datayvalue(d1,i))
+        !set color cvtrgb(VoI,0,1-VoI)
+        !set color palette_blue_purple_red(VoI)
+         if label$="I" then
+            VoI = datayvalue(d2,i)/cc_max
+            set color palette_Lightning(VoI)
+         Else if label$="\Psi" then
+            VoI = (datayvalue(d2,i)+1.)/2.
+            set color palette_PolarAngle(VoI)
+         Else if label$="\phi" then
+            VoI = (datayvalue(d2,i)+1.)/2.
+            set color palette_blue_purple_red_green2(VoI)
+         Else
+            VoI = (datayvalue(d2,i)+1.)/2.
+            set color palette_blue_white_red(VoI)
+         end if
+        amove xg(x) yg(y)
+        marker fcircle 0.5
+    next i
+     set color black
+     amove xg(corex) yg(corey)
+     marker cross 1.
+    !amove xg(0.) yg(0.)
+    !set color black
+    !marker fcircle 0.5 
+!    amove xg(LdistX) yg(LdistY-75)
+!    begin name range
+!       !colormap "x" 0 1 0 1 100 1 xg(UdistX)-xg(LdistX) 0.2 palette palette_blue_purple_red
+!       colormap "x" 0 1 0 1 100 1 xg(UdistX)-xg(LdistX) 0.2 palette palette_Lightning
+!    end name    
+!    
+!    amove pointx(range.lc) pointy(range.lc)+0.4
+!    set just cc
+!    write label$ "= " dmin
+!    
+!    amove pointx(range.rc) pointy(range.rc)+0.4
+!    set just cc !lc
+!    write label$ "= " dmax+dmin
+end sub
+
+LdistX=0
+UdistX=0
+LdistY=0
+UdistY=0
+
+fopen file$ inchan read  ! find sizes for plot
+until feof(inchan)
+   freadln inchan R theta
+    distX = R*cos(theta)
+    disty = R*sin(theta)
+   if distX>UdistX then
+      UdistX = distX
+   end if
+   if distX<LdistX then
+      LdistX = distX
+   end if
+   if distY>UdistY then
+      UdistY = distY
+   end if
+   if distY<LdistY then
+      LdistY = distY
+   end if
+next
+LdistX=LdistX-50 
+UdistX=UdistX+50
+LdistY=LdistY-100  
+UdistY=UdistY+50
+fclose inchan
+
+
+dfile$=Grid$+"_StI.grd"
+fopen dfile$ inchan read
+freadln inchan N_grid  min_grid  max_grid  StI_max d_gdid Norm_I corex corey
+LdistX=min_grid
+UdistX=max_grid
+LdistY=min_grid
+UdistY=max_grid
+
+
+amove 1.5 4+dH
+   xLab$=NorthLab$
+   yLab$=EastLab$
+   cc_min=0
+   cc_max=StI_max
+   Contr Grid$+"_StI" "I"
+amove 1.5 4+dH
+   cc_max=StI_max*Norm_I
+StokesMap  "I"
+      amove B+0.5+1.5 4+dH
+      cc_Stp=   (cc_max-cc_min)/5
+      color_range_vertical zmin cc_min zmax cc_max zstep cc_Stp palette palette_Lightning pixels 1500 format "eng 2 append I"
+
+amove 2.5+dB 4+dH
+   cc_min=-1
+   cc_max=1.
+   Contr Grid$+"_StQ" "Q/I"
+amove 2.5+dB 4+dH
+StokesMap  "Q/I"
+
+amove 1.5 4
+   cc_min=-1
+   cc_max=1.
+   Contr Grid$+"_StU" "U/I"
+amove 1.5 4
+StokesMap  "U/I"
+      cc_Stp=   0.5
+      amove B+0.5+1.5 4
+      color_range_vertical zmin cc_min zmax cc_max zstep cc_Stp palette palette_blue_white_red pixels 1500 format "eng 2"
+
+amove 2.5+dB 4
+   cc_min=-1
+   cc_max=1.
+   Contr Grid$+"_StV" "V/I"
+amove 2.5+dB 4
+StokesMap  "V/I"
+
+amove 1.5 4+2*dH
+   cc_min=-1
+   cc_max=1.
+   Contr Grid$+"_Ang" "\Psi"
+amove 1.5 4+2*dH
+StokesMap  "\Psi"
+   cc_min=-90.
+   cc_max=+90.
+   cc_Stp=   45.
+   amove B+0.5+1.5 4+2*dH
+   color_range_vertical zmin cc_min zmax cc_max zstep cc_Stp palette palette_PolarAngle pixels 1500 format "eng 2"
+
+!amove 1.5+dB 4+2*dH
+!   cc_min=-1
+!   cc_max=1.
+!   Contr Grid$+"_Ang" "\phi"
+!StokesMap  "\phi"
+!      cc_Stp=   0.5
+!      amove B+dB+0.5+1.5 4+2*dH
+!      color_range_vertical zmin cc_min zmax cc_max zstep cc_Stp palette palette_blue_purple_red_green2 pixels 1500 format "eng 2"
+
+
+amove 4 1
+   VoI=0
+   set color  palette_PolarAngle(VoI)
+   marker fcircle 1.5
+rmove 1 0
+   VoI=0.25
+   set color  palette_PolarAngle(VoI)
+   marker fcircle 1.5
+
+rmove 1 0
+   VoI=0.5
+   set color   palette_PolarAngle(VoI)
+   marker fcircle 1.5
+rmove 1 0
+   VoI=0.75
+   set color   palette_PolarAngle(VoI)
+   marker fcircle 1.5
+
+rmove 1 0
+   VoI=1.
+   set color   palette_PolarAngle(VoI)
+   marker fcircle 1.5
+
+
+amove 4 2
+   VoI=0
+   set color rgb(0,0,0) ! palette_PolarAngle(VoI)
+   marker fcircle 1.5
+
+rmove 1 0
+   VoI=0.25
+   set color rgb(1,0,0) !  palette_PolarAngle(VoI)
+   marker fcircle 1.5
+
+rmove 1 0
+   VoI=0.5
+   set color rgb(0,1,0) !  palette_PolarAngle(VoI)
+   marker fcircle 1.5
+
+rmove 1 0
+   VoI=1.
+   set color rgb(0,0,1) !  palette_PolarAngle(VoI)
+   marker fcircle 1.5
+
+rmove 1 0
+   VoI=0.25
+   set color rgb(1,1,0) !  palette_PolarAngle(VoI)
+   marker fcircle 1.5
+
+rmove 1 0
+   VoI=0.25
+   set color rgb(1,0,1) !  palette_PolarAngle(VoI)
+   marker fcircle 1.5
+
+rmove 1 0
+   VoI=0.25
+   set color rgb(0,1,1) !  palette_PolarAngle(VoI)
+   marker fcircle 1.5
+
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+set hei .7
+
+
+translate -0. +0.1
+include note.gle
+@note "StokesMap"
+translate 0 2
+

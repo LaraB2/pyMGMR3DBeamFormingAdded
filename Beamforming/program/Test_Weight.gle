@@ -1,0 +1,189 @@
+!size   29 19
+size   22 19
+! begin rotate -90
+set font pstr
+!translate -28 0
+set hei .6
+H=7
+B=7
+bsh=4.5
+dB=bsh+B
+set lwidth 0.02
+set hei .7
+
+dir$='../MGMR2/plot/'
+if(nargs() > 0 ) then 
+    dir$=arg$(1)
+end if
+dat_W$=dir$+'Wzeta_'
+
+amove 3 1.5
+write dir$
+
+d1$="010"
+d2$="030"
+
+amove 2 3+1*h
+set hei .5
+begin graph
+  size B H
+  vscale 1
+  hscale 1
+  xaxis min 0  max 20 dticks  5 dsubticks 1 !nolast
+  x2axis min 0  max 20000 dticks  5000 dsubticks 1000 !nolast
+  y2axis  min 0.0  ! min 0.002 max 10 
+  yaxis  nofirst  ! min 0.002 max 10 
+  xticks length .3
+  yticks length .3
+  xsubticks length .1
+  ysubticks length .1
+!  ylabels off
+      xlabels off
+      x2labels on
+   !
+   data dir$+"BeamPwr-w.dat" d1=c1,c4    
+   d1 xaxis yaxis lstyle 0 lwidth .1 color magenta
+   !
+   !data dir$+"KPwr-50_03000000.dat"  d51=c1,c4    ignore 1 ! The PSF itself
+   data dir$+"KPwr-34603000000.dat"  d51=c1,c4    ignore 1 ! The PSF itself
+   d51 x2axis y2axis lstyle 0 lwidth .05 color cyan
+   !data dir$+"KPwr-W-50_03000000.dat"  d52=c1,c2    ignore 1 ! The PSF itself
+   !d52 x2axis yaxis lstyle 0 lwidth .05 color green
+   !
+   end graph
+begin key
+    nobox
+    position bl
+    text "3 km"
+end key
+
+amove 2 3
+
+set hei .5
+begin graph
+  size B H
+  vscale 1
+  hscale 1
+  xaxis min 0  max 5 dticks  1 dsubticks .2 !nolast
+  x2axis min 0  max 5000 dticks  1000 dsubticks 200 !nolast
+  yaxis  min 0.0 nolast ! min 0.002 max 10 
+  y2axis  min 0.0  ! min 0.002 max 10 
+  xticks length .3
+  yticks length .3
+  xsubticks length .1
+  ysubticks length .1
+!  ylabels off
+!   xlabels off
+   x2labels off
+   y2labels on
+   !
+   data dir$+"BeamPwr-w.dat" d1=c1,c2    
+   d1 xaxis yaxis lstyle 0 lwidth .1 color magenta
+   !
+   !data dir$+"KPwr-50_01000000.dat"  d51=c1,c4    ignore 1 ! The PSF itself
+   data dir$+"KPwr-34601000000.dat"  d51=c1,c4    ignore 1 ! The PSF itself
+   d51 x2axis y2axis lstyle 0 lwidth .05 color cyan
+   !data dir$+"KPwr-W-50_01000000.dat"  d52=c1,c2    ignore 1 ! The PSF itself
+   !d52 x2axis yaxis lstyle 0 lwidth .05 color green
+   !
+   end graph
+begin key
+    nobox
+    position bl
+    text "1 km"
+end key
+
+amove 2+3+B 3
+
+set hei .5
+begin graph
+  size B H
+  vscale 1
+  hscale 1
+  xaxis min 0  max 20 dticks  5 dsubticks 1 !nolast
+  x2axis min 0  max 20000 dticks  5000 dsubticks 1000 !nolast
+  yaxis  min 0.0 nolast ! min 0.002 max 10 
+  y2axis  min 0.0  ! min 0.002 max 10 
+  xticks length .3
+  yticks length .3
+  xsubticks length .1
+  ysubticks length .1
+!  ylabels off
+!   xlabels off
+   x2labels off
+   y2labels on
+   !
+   data dir$+"BeamPwr-w.dat" d1=c1,c8  d2=c1,c9  d3=c1,c10    
+   d1 xaxis yaxis lstyle 0 lwidth .1 color magenta
+   d2 xaxis yaxis lstyle 0 lwidth .1 color red
+   d3 xaxis yaxis lstyle 0 lwidth .1 color orange
+   !
+   !data dir$+"KPwr-50_07000000.dat"  d51=c1,c4    ignore 1 ! The PSF itself
+   data dir$+"KPwr-34607000000.dat"  d51=c1,c4    ignore 1 ! The PSF itself
+   d51 x2axis y2axis lstyle 0 lwidth .05 color cyan
+   !data dir$+"KPwr-W-50_07000000.dat"  d52=c1,c2    ignore 1 ! The PSF itself
+   !d52 x2axis yaxis lstyle 0 lwidth .05 color green
+   !
+  end graph
+begin key
+    nobox
+    position tl
+    set hei .5
+    lstyle 0  lwidth 0.1 color magenta  text "W(t_r,z=7km)"
+    lstyle 0  lwidth 0.1 color red  text "W(t_r,z=8km)"
+    lstyle 0  lwidth 0.1 color orange  text "W(t_r,z=9km)"
+end key
+begin key
+    nobox
+    position bl
+    text "7 km"
+end key
+
+amove 2+3+B 3+1*h
+!sub ZhGraph labels Id$ Label$ 
+set hei .5
+begin graph
+  size B H
+  vscale 1
+  hscale 1
+  xaxis min 0  max 20 dticks  5 dsubticks 1 !nolast
+  x2axis min 0  max 20000 dticks  5000 dsubticks 1000 !nolast
+  yaxis  min 0.0  ! min 0.002 max 10 
+  y2axis  min 0.0  ! min 0.002 max 10 
+  xticks length .3
+  yticks length .3
+  xsubticks length .1
+  ysubticks length .1
+!  ylabels off
+   xlabels off
+   x2labels on
+   y2labels on
+   !
+   data dir$+"BeamPwr-w.dat" d1=c1,c16    ! written in "TestWeight"
+   d1 xaxis yaxis lstyle 0 lwidth .1 color magenta
+   !
+   !data dir$+"KPwr-50_15000000.dat"  d51=c1,c4    ignore 1 ! The weights, normalized
+   data dir$+"KPwr-34615000000.dat"  d51=c1,c4    ignore 1 ! The weights, normalized
+   d51 x2axis y2axis lstyle 0 lwidth .05 color cyan
+   !data dir$+"KPwr-W-50_15000000.dat"  d52=c1,c2    ignore 1 ! RbnPSFWght(i,if_psf), un-normalized, from subroutine "ReadPSF"
+   !d52 x2axis yaxis lstyle 0 lwidth .05 color green
+   !
+   end graph
+begin key
+    nobox
+    position tl
+    set hei .5
+    lstyle 0  lwidth 0.05 color green  text "W(t_r,z)"
+    lstyle 0  lwidth 0.05 color magenta  text "W re-binned"
+end key
+begin key
+    nobox
+    position tr
+    lstyle 0  lwidth 0.05 color cyan  text "W/norm "
+end key
+begin key
+    nobox
+    position bl
+    text "z=15 km"
+end key
+

@@ -1,0 +1,149 @@
+size   16  26
+!size   30  26
+!size   44  26
+set font pstr
+H=9
+B=9
+bsh=3.0
+dB=bsh+B
+dH=bsh+H
+set lwidth 0.02
+
+dir$='../MGMR2/plot/'
+Filtrd$=dir$+"SrcKFilt"
+if(nargs() > 0 ) then 
+    Filtrd$=arg$(1)
+end if
+amove 3 0.5
+write Filtrd$
+
+set font texcmr
+set lwidth .03
+set hei 0.6
+
+include "color.gle"
+include "MaxMin.gle"
+include "RdYlBl.gle"
+ 
+sub Contr file$ Titl$
+   cc_Stp=   (cc_max-cc_min)/10
+   begin contour     ! needed for making contours, produes "file-cdata.dat" and "file-clabels.dat" from "file.z" created earlier
+      data file$+".z"
+      values from cc_min to cc_max step cc_Stp
+   end contour
+   begin graph
+      size B H
+      vscale 1
+      hscale 1
+      xtitle "t_b [ns]"  ! "h_f [m]"
+      ytitle "D_c [km]" ! "-t_r [m]"
+      x2ticks color white
+      yticks color gray30
+      yaxis symticks 
+      x1ticks color black length -0.1
+      colormap file$+".z" 500 500  zmin cc_min zmax cc_max palette palette_Lightning
+   end graph
+   !
+end sub
+
+
+Sub MapKernel PltFil$ x0 y0
+   amove x0 y0
+   local z0, rs0, ih1, ih2, delh, it1, it2, dt, minK, maxK, h0, phi_f
+   fopen PltFil$+'.grd' inchan read  ! get ranges for plot
+   freadln inchan z0 rs0 ih1 ih2 delh it1 it2 dt maxK phi_f h_max itmax 
+   fclose inchan
+      cc_min=-maxK/2.  ! /10.
+      cc_max=maxK/2. ! maxK  /10.
+      Contr PltFil$ "I"
+   amove x0 y0+0.5+h
+  ! write 'z_f=' z0 '[m], r_f=' rs0 '[m], \phi_f=' phi_f '^o'
+   write 'D_b=' z0/1000 '[km], r_s=' rs0 '[m], \phi_s=' phi_f '^o'
+   amove x0+B+0.5 y0
+      cc_Stp=   (cc_max-cc_min)/5
+      color_range_vertical zmin cc_min zmax cc_max zstep cc_Stp palette palette_Lightning pixels 1500 format "eng 2" ! "eng 2 append []"
+   !
+   amove x0 y0+dH
+   begin graph
+      size B/2+0.5 H
+      vscale 1
+      hscale 1
+      !xaxis min (ih1-0.5)*delh/0.3 max (ih2-.5)*delh/0.3  dticks  5 dsubticks 1 nolast
+      xaxis min -hrange max hrange ! dticks  1 dsubticks 0.5 
+      xtitle "t_b [ns]"
+      yaxis  !min it1*dt max it2*dt ! hei .5 
+      ytitle "Amplitude"
+      data PltFil$+'.grd' d1=c1,c8 d2=c1,c9  d3=c1,c10 d4=c1,c13  d11=c1,c7 d12=c1,c6 d13=c1,c4 ignore 2
+      d13 line smooth lstyle 0 color tan lwidth 0.03
+      d12 line smooth lstyle 0 color orange lwidth 0.03
+      d11 line smooth lstyle 0 color red lwidth 0.02
+      d1 line smooth lstyle 0 color magenta lwidth 0.02
+      d2 line smooth lstyle 0 color blue lwidth 0.02
+      d3 line smooth lstyle 0 color green lwidth 0.02
+      d4 line smooth lstyle 0 color tan lwidth 0.03
+   end graph
+   begin key
+       nobox
+       position tr
+       line lstyle 0 color green lwidth 0.02 text "+2dD_c" 
+       line lstyle 0 color blue lwidth 0.02 text "+dD_c" 
+       line lstyle 0 color magenta  lwidth 0.02 text "D_c^{max}" 
+       lstyle 0 color red lwidth 0.02 text "-dD_c" 
+       lstyle 0 color orange lwidth 0.03 text "-2dD_c" 
+   end key
+   amove x0-1 y0+dH+1+h
+   write 'D_c^{max}=' (itmax+it1)*dt/1000 ', dD_c=' 5*dt/1000
+   !
+   amove x0+B/2+0.5 y0+dH
+   !ih1=ih1+45
+   begin graph
+      size B/2+0.5 H
+      vscale 1
+      hscale 1
+      xaxis nofirst !   dticks  10 dsubticks 1 !nolast
+      y2axis min it1*dt max it2*dt ! hei .5 
+      y2title "D_c [m]"
+      xtitle "Amplitude"
+      yaxis min 0 max it2-it1 ! hei .5 
+      y1labels off
+      y2labels on
+!      xaxis ! dticks  10 dsubticks 1 !nolast
+!      yaxis  min it1 max it2  hei .5 
+! central one at [h_max-ih1+1]
+!      data file$+Label$+'.dat' d2=c3,c1 d3=c4,c1 d4=c5,c1 d6=c6,c1 d8=c7,c1 d9=c8,c1 d10=c9,c1 ignore 1
+      data PltFil$+'.z' d1=c[h_max-ih1+1],c0 d2=c[h_max-ih1+2],c0 d3=c[h_max-ih1+3],c0 d4=c[h_max-ih1+4],c0 d10=c[h_max-ih1+0],c0 d11=c[h_max-ih1-1],c0 d12=c[h_max-ih1-2],c0 
+      d12 line  lstyle 0 color tan lwidth 0.03
+      d11 line  lstyle 0 color orange lwidth 0.03
+      d10 line  lstyle 0 color red lwidth 0.02
+      d1 line  lstyle 0 color magenta lwidth 0.02
+      d2 line  lstyle 0 color blue lwidth 0.02
+      d3 line  lstyle 0 color green lwidth 0.02
+      d4 line  lstyle 0 color tan lwidth 0.03
+   end graph
+   begin key
+       nobox
+       position tr
+       line lstyle 0 color green lwidth 0.02 text "+2dt_b" 
+       line lstyle 0 color blue lwidth 0.02 text "+dt_b" 
+       line lstyle 0 color magenta  lwidth 0.02 text "t_b^{max}" 
+       lstyle 0 color red lwidth 0.02 text "-dt_b" 
+       lstyle 0 color orange lwidth 0.03 text "-2dt_b" 
+   end key
+   amove x0+B/2+1 y0+dH+1+h
+   write 't_b^{max}=' (h_max-0.5)*delh/0.3 ', dt_b=' delh/0.3
+end sub
+
+!------------------------------------------------
+Filtr$=dir$+"SrcKFilt"
+
+hrange=10
+MapKernel Filtrd$ bsh bsh
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!set hei .7
+
+translate -0. +0.1
+include note.gle
+@note "SrcKernelMap"
+translate 0 2
+

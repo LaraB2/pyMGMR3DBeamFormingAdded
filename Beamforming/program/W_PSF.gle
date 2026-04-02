@@ -1,0 +1,154 @@
+!size   29 19
+size   19 21
+! begin rotate -90
+set font pstr
+!translate -28 0
+set hei .5
+H=7
+B=7
+bsh=4.5
+dB=bsh+B
+set lwidth 0.02
+
+dir$='../MGMR2/plot/'
+if(nargs() > 0 ) then 
+    dir$=arg$(1)
+end if
+dat_K$=dir$+'KPwr-'     ! the Kernel-power as calculated in MGMR2, current independent
+dat_PSF$=dir$+'KPSF-'   ! the Kernel-PSF as calculated in MGMR2, current independent
+dat_tt$=dir$+"BeamPwr-tt.dat" ! The beamformed E-fields as function of Z
+amove 3 0.5
+write dir$
+set hei .7
+
+d1$="030"
+d2$="060"
+d3$="105"
+d4$="185"
+
+fopen dir$+'BeamPwr-w.dat' inchan read
+freadln inchan Z_low Z_step N_PSF Label2$
+freadln inchan Label31$ Label32$ Label33$ Label34$ Label35$ Label36$ Label37$ Label38$
+
+amove 2 3+2*h+1.2
+!write 'X_{max}=' X_max '[g/cm^2],  \theta_{sh}=' Zen_sh '^o'
+
+sub KernelPower labels Label$ 
+set hei .7
+begin graph
+  size 2*B H
+  vscale 1
+  hscale 1
+  xaxis ! min 0.05  max 0.2 dticks  0.5 dsubticks 0.1 !nolast
+  yaxis !  min -0.5 max 1.5 
+  xticks length .3
+  yticks length .3
+  xsubticks length .1
+  ysubticks length .1
+  xtitle "D_c"
+!  ylabels off
+   if labels = 2 then
+      xlabels off
+      x2labels on
+   end if
+   data dat_K$+Label$+Label33$+".dat" d41=c1,c2  d44=c1,c4 ! ignore 1
+   data dat_K$+Label$+Label35$+".dat" d1=c1,c2  d4=c1,c4 ! ignore 1
+   data dat_K$+Label$+Label38$+".dat" d81=c1,c2  d84=c1,c4 ! ignore 1
+   d44 lstyle 0  lwidth 0.1 color magenta  ! magenta
+   d41 lstyle 0  lwidth 0.1 color brown
+   d4 lstyle 0  lwidth 0.1 color blue  
+   d1 lstyle 0  lwidth 0.1 color black
+   d84 lstyle 0  lwidth 0.1 color red  ! magenta
+   d81 lstyle 0  lwidth 0.1 color orange
+   let d9=0
+   d9 yaxis lstyle 0  lwidth 0.03  color black 
+  end graph
+begin key
+    nobox
+    position tl
+    set hei .5
+    lstyle 0  lwidth 0.1 color blue text "*PSF"
+    lstyle 0  lwidth 0.1 color black text "sqrt(power)"
+end key
+end sub
+
+sub KernelPSF labels Label$ 
+set hei .7
+begin graph
+  size 2*B H
+  vscale 1
+  hscale 1
+  xaxis min -30  max +30 ! dticks  0.5 dsubticks 0.1 !nolast
+  xaxis min -15  max +15 ! dticks  0.5 dsubticks 0.1 !nolast
+  yaxis    ! min 0.002 max 10 
+  y2axis    ! min 0.002 max 10 
+  xticks length .3
+  yticks length .3
+  xsubticks length .1
+  ysubticks length .1
+  xtitle "t_b [m]"
+!  ylabels off
+   if labels = 2 then
+      xlabels off
+      x2labels on
+   end if
+   data dat_PSF$+Label$+Label33$+".dat" d41=c3,c2   ! ignore 1
+   data dat_PSF$+Label$+Label35$+".dat" d61=c3,c2  ! ignore 1
+   data dat_PSF$+Label$+Label38$+".dat" d81=c3,c2   ! ignore 1
+   !d41 lstyle 3  lwidth 0.1 color magenta  ! PSF
+   !d61 lstyle 3  lwidth 0.08 color blue  
+   d81 lstyle 3  lwidth 0.06 color red  
+   data dat_tt$ d1=c1,c3 d2=c1,c6 d3=c1,c9  ! ignore 1 !  E-sum
+   !d1 y2axis lstyle 2  lwidth 0.05  color magenta 
+   !d2 y2axis lstyle 2  lwidth 0.04  color blue 
+   !d3 y2axis lstyle 2  lwidth 0.03  color red 
+   !data dir$+"BeamPwr-tstK.dat" d11=c1,c3 d12=c1,c6 d13=c1,c9  ! ignore 1 = K*I
+   data dir$+"BeamPwr-tstK.dat" d11=c1,c12 d12=c1,c13 d13=c1,c14  d14=c1,c15  ! ignore 1 = K*I
+   d11 y2axis lstyle 4  lwidth 0.1  color magenta 
+   d12 y2axis lstyle 4  lwidth 0.08  color blue 
+   d13 y2axis lstyle 5  lwidth 0.08  color red 
+   d14 y2axis lstyle 5  lwidth 0.06  color green 
+   let d9=0
+   d9 yaxis lstyle 0  lwidth 0.03  color black 
+  end graph
+begin key
+    nobox
+    position tl
+    set hei .5
+    lstyle 3  lwidth 0.1 color magenta text "2.5km, PSF"
+    lstyle 3  lwidth 0.08 color blue text "4.5km"
+    lstyle 3  lwidth 0.06 color red text "PSF@"+Label38$
+end key
+begin key
+    nobox
+    position tr
+    set hei .5
+    lstyle 4  lwidth 0.05 color magenta text "low, K*I"
+    lstyle 4  lwidth 0.04 color blue text "low, E-sum"
+    lstyle 5  lwidth 0.05 color red text "high, K*I"
+    lstyle 5  lwidth 0.04 color green text "high, E-sum"
+end key
+end sub
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
+
+!amove 2+dB 3
+amove 2 3
+KernelPower 1 Label2$
+amove 2 5+1*h
+KernelPSF 1 Label2$
+
+
+d1$="010"
+d2$="030"
+amove 2 3+1*h
+!ZhGraph 2 "x" d2$
+amove 2 3
+!ZhGraph 1 "x" d1$
+
+!amove 2+dB 3+1*h
+!ZhGraph 2 "x" "06002"
+
+translate -0.2 -0.2
+include note.gle
+@note "WSrc"
+

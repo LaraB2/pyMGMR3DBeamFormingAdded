@@ -1,0 +1,87 @@
+size  32 21.0   ! A4
+set font pstr
+set hei 0.7
+set lwidth 0.05
+
+dir$='../runs/plot/'
+dir$='../MGMR2/plot/'
+dir$='../MGMR2/plot00-up/'
+!dir$='../MGMR2/plot00-80/'
+dir$='../MGMR2/plot00-res/'
+dir$='../MGMR2/plot00-up-n/'
+dir$='../MGMR2/plot00-up-hcoarse/'
+dir$='../MGMR2/plot00-up-w/'
+
+if(nargs() > 0 ) then 
+    dir$=arg$(1)
+end if
+amove 3 1.5
+write dir$
+
+amove 4 4
+begin graph
+  size 24 16
+  vscale 1
+  hscale 1
+  xaxis  min 0 max 13  dticks  5 dsubticks 1 !nolast
+  !yaxis log min 0.1 ! min 0 max 4e-4   hei .9 
+  yaxis ! min 0 ! max 4e-4   hei .9 
+  y2axis ! min 0 ! max 4e-4   hei .9 
+  xticks length .5
+  yticks length .5
+  xtitle "D to core [km]"
+  !
+  data dir$+"BeamPwr-a.dat" d21=c1,c2 d22=c1,c3 d23=c1,c4   d24=c1,c5   
+  d21 y2axis marker circle msize 0.3  color green    ! R=E_ttrace-power
+  d22 y2axis marker circle msize 0.3  color red    ! R=E_ttrace*PSF
+  !d23 yaxis marker diamond msize 0.3 lstyle 4 color black  ! calculated current from folding Pwr
+  d24 yaxis marker cross msize 0.3 lstyle 4 color cyan  ! calculated current from folding PSF
+  !
+  data dir$+"BeamPwr-tst.dat" d32=c1,c2 d33=c1,c3 d11=c1,c4   ! R=Weight*I 
+  ! data dir$+"sh_Current.dat" d11=c1,c4   !  J_x used to generate E-fields
+  d11 yaxis lstyle 0 lwidth .1  color green  !  J_x used to generate E-fields
+  d32 y2axis lstyle 2 lwidth .1 color red  ! W(PSF) *input J
+ ! d33 y2axis lstyle 0 lwidth .1 color xgreen  ! W(Pwr) *input J
+  !
+  data dir$+"BeamPwr-PwrFit.dat" d43=c1,c3 d44=c1,c4 d46=c1,c6 d47=c1,c7 d48=c1,c8 d49=c1,c9   ! R=profile fit
+!  d43  y2axis lstyle 0  color brown    ! W_{Pwr}*J_x(fit)
+!  d44 yaxis lstyle 3  color brown   ! J, from W_Pwr
+  d46 y2axis lstyle 2 lwidth .1  color magenta   ! W_{PSF}*J_x(fit)
+  d47 yaxis lstyle 3 lwidth .1  color magenta    ! J, from W_PSF
+  d48 y2axis lstyle 2 lwidth .1 color blue
+  d49 yaxis lstyle 3 lwidth .07 color blue  ! Krnl
+  !
+  let d99 = 0 from 0.0 to 20 step 1
+  d99 y2axis lstyle 0 lwidth 0.02 color black
+  let d98 = 0 from 0.0 to 20 step 1
+  d98 yaxis lstyle 0 lwidth 0.02 color black
+  end graph
+begin key
+    nobox
+    position tl
+    lstyle 0 lwidth .1  color green text "J_x (input) " 
+    lstyle 3 lwidth .07  color blue text "J_x (Fit krnl) " 
+!    lstyle 3 lwidth .1  color brown text "J_x (Fit Pwr) " 
+    lstyle 3 lwidth .1  color magenta text "J_x (Fit PSF) " 
+    !marker diamond msize 0.3 lstyle 4 color black  text "J_x (unf-Pwr) "
+    marker cross msize 0.2 lstyle 4 color cyan  text "J_x (unf-PSF) "
+end key
+begin key
+    nobox
+    position tr
+    marker circle msize 0.3 color green   text "sqrt(E_t^2)=Pwr"  
+    lstyle 2 lwidth .1 color blue text "Krnl*J_x(fit)"
+!    lstyle 0 lwidth .1 color xgreen text "W_{Pwr}*J_x(inpt)"
+!    lstyle 0 lwidth .1 color brown text "W_{Pwr}*J_x(fit)"
+    marker circle msize 0.3 color red   text "E_t*PSF"  
+    lstyle 2 lwidth .1 color red text "W_{PSF}*J_x(inpt)"
+    lstyle 2 lwidth .1 color magenta text "W_{PSF}*J_x(fit)"
+end key
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+translate -0.2 -0.2
+include note.gle
+@note "sh-current"
+translate 0 2
+

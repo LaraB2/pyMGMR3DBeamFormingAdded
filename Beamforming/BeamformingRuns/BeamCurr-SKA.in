@@ -1,0 +1,12 @@
+ &BeamPars 
+Base =   "SKA/Crs-"   ! 48 -- 300 MHz
+DataBase = "SKA/"
+KernelBase =   "SKx/Coarse"   ! 48 -- 300 MHz
+AntennaLayout = .false., DistMax = 500.
+zeta_K= 0.02, 0.1,  0.2, .500, 1.500, 2.500, 3.500, 4.500, 5.500, 7.000, 8.500, 10.000, 12., 14., 17., 20., -1.
+GoodQual=5.
+FracFold=0.4
+ &end
+   --- ---------- -------- ------------- -   nohup ./Beam-SKA.sh  >Beam-SKA.log 2>&1  & 
+
+

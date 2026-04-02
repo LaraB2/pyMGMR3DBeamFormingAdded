@@ -1,0 +1,106 @@
+size   37  17
+set font pstr
+set hei .6
+H=9
+B=7
+bsh=1.5
+dB=bsh+B
+dH=bsh+H
+set lwidth 0.03
+d_max=500
+
+file$='FitResult'
+if(nargs() > 0 ) then 
+   file$=arg$(1)  ! Should include the appropriate path to make this script machine independent
+end if
+filedat$=file$+'.dat'
+
+sub StokesGraph label$
+begin graph
+  size B H
+  vscale 1
+  hscale 1
+    xaxis min 0.0 max d_max  dticks  100 dsubticks 20 hei .7 !nolast
+    if label$ = "I" then 
+        yaxis ! min 0 max 2e-18  hei .7 ! dticks 5 dsubticks 1  
+        !  yaxis log hei .7 ! min 0.5 max 30.   
+    else   
+        yaxis min -1. max 1.  dticks  0.5 dsubticks 0.1 hei .7 
+    end if  
+  xticks length .3
+  yticks length .3
+  xsubticks length .1
+  ysubticks length .1
+  xlabels off
+  x2labels on
+    if label$ = "I" then 
+        data filedat$ d1=c1,c3 d2=c1,c5 d3=c1,c4   
+    else if label$ = "Q/I" then  
+        data filedat$ d1=c1,c6 d2=c1,c8 d3=c1,c7
+    else if label$ = "U/I" then  
+        data filedat$ d1=c1,c9 d2=c1,c11 d3=c1,c10
+    else if label$ = "V/I" then  
+        data filedat$ d1=c1,c12 d2=c1,c14 d3=c1,c13
+    end if  
+  d3 marker dot  msize .4 color blue
+  d1 marker cross  msize .2 err d2  color red
+  end graph
+begin key
+    nobox
+    position tr
+    text label$ color black
+    marker dot  msize .4 text "MGMR3D" color blue
+    marker cross  msize .2 text "DATA" color red
+end key
+rmove 0 -3
+begin graph
+  size B 3
+  vscale 1
+  hscale 1
+  xaxis min 0.0 max d_max  dticks  100 dsubticks 20 hei .7 !nolast
+  !yaxis  min -4 max 4  hei .7 nolast dticks 2 dsubticks 1
+  yaxis  min -2 max 2  hei .7 nolast dticks 1 dsubticks .5
+  xticks length .3
+  yticks length .3
+  xsubticks length .1
+  ysubticks length .1
+  xtitle "d [m]"
+    !let d10 = (d3-d1)   ! 'relative to data' 
+    if label$ = "I" then 
+        data filedat$ d1=c1,c3 d2=c1,c5 d3=c1,c4   
+    else if label$ = "Q/I" then  
+        data filedat$ d1=c1,c6 d2=c1,c8 d3=c1,c7
+    else if label$ = "U/I" then  
+        data filedat$ d1=c1,c9 d2=c1,c11 d3=c1,c10
+    else if label$ = "V/I" then  
+        data filedat$ d1=c1,c12 d2=c1,c14 d3=c1,c13
+    end if  
+    if label$ = "I" then 
+        let d10 = (d3-d1)/d2   ! 'pull distribution' (-4 to +4)
+        ! let d10 = 10*(d3-d1)/d1   ! 'relative to data' 
+    else   
+        ! let d10 = 10*(d3-d1)   ! 'relative to data' 
+        let d10 = (d3-d1)/d2   ! 'pull distribution' (-4 to +4)
+    end if  
+    d10 marker dot  msize .15 color black
+  let d99 = 0 from 0.0 to d_max step 1
+  d99 lstyle 0 lwidth 0.02 color black
+  end graph
+end sub
+
+amove 2.5 6
+StokesGraph  "I"
+amove 2.5+dB 6
+StokesGraph  "Q/I"
+amove 2.5+2*dB 6
+StokesGraph  "U/I"
+amove 2.5+3*dB 6
+StokesGraph  "V/I"
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+translate -0.2 -0.2
+include note.gle
+@note "FitStokes"
+translate 0 2
+
